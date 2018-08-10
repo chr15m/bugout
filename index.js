@@ -45,6 +45,10 @@ function Bugout(identifier, opts) {
   this.identifier = identifier || this.pk;
   this.peers = {}; // list of peers seen recently: pk -> ek, timestamp
   this.seen = {}; // messages we've seen recently: hash -> timestamp
+
+  // rpc api functions and pending callback functions
+  this.api = {};
+  this.callbacks = {};
   
   debug("identifier", this.identifier);
   debug("public key", this.pk);
@@ -67,42 +71,53 @@ Bugout.prototype.send = function(pk, message) {
     var message = pk;
     var pk = null;
   }
-  var packet = makePacket(this, message);
+  var packet = makePacket(this, {"y": "m", "v": JSON.stringify(message)});
   if (pk) {
-    if (this.peers[pk]) {
-      var nonce = nacl.randomBytes(nacl.box.nonceLength);
-      packet = bencode.encode({
-        "n": nonce,
-        "ek": bs58.encode(this.keyPairEncrypt.publicKey),
-        "e": nacl.box(packet, nonce, bs58.decode(this.peers[pk].ek), this.keyPairEncrypt.secretKey),
-      });
-    } else {
-      throw pk + " not seen - no encryption key.";
-    }
+    packet = encryptPacket(this, pk, packet);
   }
-  // broadcast message to all wires
+  sendRaw(this, packet);
+}
+
+Bugout.prototype.rpc = function(pk, call, args, callback) {
+  var callnonce = nacl.randomBytes(8);
+  var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
+  this.callbacks[toHex(callnonce)] = callback;
+  packet = encryptPacket(this, pk, packet);
   sendRaw(this, packet);
 }
 
 // outgoing
 
-function makePacket(bugout, message) {
-  if (typeof(message) == "string") {
-    var p = bencode.encode({
-      "v": message,
-      "t": now(),
-      "i": bugout.identifier,
-      "pk": bugout.pk,
-      "ek": bugout.ek,
-      "n": nacl.randomBytes(8),
-    });
-    return bencode.encode({
-      "s": nacl.sign.detached(p, bugout.keyPair.secretKey),
-      "p": p,
+function makePacket(bugout, params) {
+  var p = {
+    "t": now(),
+    "i": bugout.identifier,
+    "pk": bugout.pk,
+    "ek": bugout.ek,
+    "n": nacl.randomBytes(8),
+  };
+  for (var k in params) {
+    p[k] = params[k];
+  }
+  pe = bencode.encode(p);
+  return bencode.encode({
+    "s": nacl.sign.detached(pe, bugout.keyPair.secretKey),
+    "p": pe,
+  });
+}
+
+function encryptPacket(bugout, pk, packet) {
+  if (bugout.peers[pk]) {
+    var nonce = nacl.randomBytes(nacl.box.nonceLength);
+    packet = bencode.encode({
+      "n": nonce,
+      "ek": bs58.encode(bugout.keyPairEncrypt.publicKey),
+      "e": nacl.box(packet, nonce, bs58.decode(bugout.peers[pk].ek), bugout.keyPairEncrypt.secretKey),
     });
   } else {
-    throw "Sent message must be a string";
+    throw pk + " not seen - no encryption key.";
   }
+  return packet;
 }
 
 function sendRaw(bugout, message) {
@@ -141,14 +156,30 @@ function onMessage(bugout, identifier, wire, message) {
       var checksig = nacl.sign.detached.verify(unpacked.p, unpacked.s, bs58.decode(pk));
       var checkid = id == identifier;
       var checktime = packet.t + bugout.timeout > t;
+      debug("packet", packet);
       if (checksig && checkid && checktime) {
         // message is authenticated
         var ek = utf8decoder.decode(packet.ek);
         sawPeer(bugout, pk, ek);
         // check packet types
-        if (packet.v) {
+        if (packet.y == "m") {
           debug("message", identifier, packet);
-          bugout.emit("message", pk, utf8decoder.decode(packet.v), packet);
+          bugout.emit("message", pk, JSON.parse(utf8decoder.decode(packet.v)), packet);
+        } else if (packet.y == "r") { // rpc call
+          debug("rpc", identifier, packet);
+          var call = utf8decoder.decode(packet.c);
+          var args = JSON.parse(utf8decoder.decode(packet.a));
+          var nonce = packet.rn;
+          bugout.emit("rpc", pk, call, args, toHex(nonce));
+          // make the API call and send back response
+          rpcCall(bugout, pk, call, args, nonce);
+        } else if (packet.y == "rr") { // rpc response
+          var nonce = toHex(packet.rn);
+          if (bugout.callbacks[nonce]) {
+            bugout.callbacks[nonce](JSON.parse(utf8decoder.decode(packet.rr)));
+          } else {
+            debug("dropped response with no callback.", nonce);
+          }
         } else {
           // TODO: handle ping/keep-alive message
           debug("unknown packet type");
@@ -167,6 +198,20 @@ function onMessage(bugout, identifier, wire, message) {
   }
   // refresh last-seen timestamp on this message
   bugout.seen[hash] = now();
+}
+
+// network functions
+
+function rpcCall(bugout, pk, call, args, nonce, callback) {
+  if (bugout.api[call]) {
+    bugout.api[call](pk, args, function(result) {
+      var packet = makePacket(bugout, {"y": "rr", "rn": nonce, "rr": JSON.stringify(result)});
+      packet = encryptPacket(bugout, pk, packet);
+      sendRaw(bugout, packet);
+    })
+  } else {
+    return {"error": "No such function"}
+  }
 }
 
 function sawPeer(bugout, pk, ek, identifier) {
