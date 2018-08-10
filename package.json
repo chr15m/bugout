@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "babel-minify": "^0.4.3",
+    "bencode": "^2.0.0",
+    "bs58": "^4.0.1",
+    "debug": "^3.1.0",
+    "inherits": "^2.0.3",
+    "tweetnacl": "^1.0.0",
+    "webtorrent": "^0.102.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.2",
+    "uglify-es": "^3.3.9"
+  },
+  "main": "index.js",
+  "name": "bugout",
+  "scripts": {
+    "build": "browserify -s Bugout index.js > bugout.js",
+    "minify": "npm run build && cat bugout.js | minify > bugout.min.js",
+    "size": "npm run build && cat bugout.min.js | gzip | wc -c"
+  },
+  "version": "0.0.1"
+}

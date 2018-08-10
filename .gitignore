@@ -1,0 +1,4 @@
+package-lock.json
+.*.swp
+node_modules
+bugout.js
