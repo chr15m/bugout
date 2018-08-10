@@ -67,16 +67,20 @@ Bugout.prototype.send = function(pk, message) {
     var message = pk;
     var pk = null;
   }
-  // broadcast message to all wires
+  var packet = makePacket(this, message);
   if (pk) {
     if (this.peers[pk]) {
-      var packet = makeEncryptedPacket(pk, message);
+      var nonce = nacl.randomBytes(nacl.box.nonceLength);
+      packet = bencode.encode({
+        "n": nonce,
+        "ek": bs58.encode(this.keyPairEncrypt.publicKey),
+        "e": nacl.box(packet, nonce, bs58.decode(this.peers[pk].ek), this.keyPairEncrypt.secretKey),
+      });
     } else {
       throw pk + " not seen - no encryption key.";
     }
-  } else {
-    var packet = makePacket(this, message);
   }
+  // broadcast message to all wires
   sendRaw(this, packet);
 }
 
@@ -101,10 +105,6 @@ function makePacket(bugout, message) {
   }
 }
 
-function makeEncryptedPacket(pk, message) {
-  
-}
-
 function sendRaw(bugout, message) {
   var wires = bugout.torrent.wires;
   for (var w=0; w<wires.length; w++) {
@@ -118,30 +118,46 @@ function onMessage(bugout, identifier, wire, message) {
   // hash to reference incoming message
   var hash = toHex(nacl.hash(message).slice(16));
   var t = now();
-  debug("raw message", identifier, hash);
+  debug("raw message", identifier, message.length, hash);
   if (!bugout.seen[hash]) {
-    var decrypted = message;
-    var unpacked = bencode.decode(decrypted);
-    var packet = bencode.decode(unpacked.p);
-    var pk = utf8decoder.decode(packet.pk);
-    var id = utf8decoder.decode(packet.i);
-    var checksig = nacl.sign.detached.verify(unpacked.p, unpacked.s, bs58.decode(pk));
-    var checkid = id == identifier;
-    var checktime = packet.t + bugout.timeout > t;
-    if (checksig && checkid && checktime) {
-      // message is authenticated
-      var ek = utf8decoder.decode(packet.ek);
-      sawPeer(bugout, pk, ek);
-      // check packet types
-      if (packet.v) {
-        debug("message", identifier, packet);
-        bugout.emit("message", pk, utf8decoder.decode(packet.v), packet);
+    var unpacked = bencode.decode(message);
+    // if this is an encrypted packet first try to decrypt it
+    if (unpacked.e && unpacked.n && unpacked.ek) {
+      var ek = utf8decoder.decode(unpacked.ek);
+      debug("message encrypted by", ek, unpacked);
+      var decrypted = nacl.box.open(unpacked.e, unpacked.n, bs58.decode(ek), bugout.keyPairEncrypt.secretKey);
+      if (decrypted) {
+        unpacked = bencode.decode(decrypted);
       } else {
-        // TODO: handle ping/keep-alive message
-        debug("unknown packet type");
+        unpacked = null;
+      }
+    }
+    // if there's no data decryption failed
+    if (unpacked && unpacked.p) {
+      debug("unpacked message", unpacked);
+      var packet = bencode.decode(unpacked.p);
+      var pk = utf8decoder.decode(packet.pk);
+      var id = utf8decoder.decode(packet.i);
+      var checksig = nacl.sign.detached.verify(unpacked.p, unpacked.s, bs58.decode(pk));
+      var checkid = id == identifier;
+      var checktime = packet.t + bugout.timeout > t;
+      if (checksig && checkid && checktime) {
+        // message is authenticated
+        var ek = utf8decoder.decode(packet.ek);
+        sawPeer(bugout, pk, ek);
+        // check packet types
+        if (packet.v) {
+          debug("message", identifier, packet);
+          bugout.emit("message", pk, utf8decoder.decode(packet.v), packet);
+        } else {
+          // TODO: handle ping/keep-alive message
+          debug("unknown packet type");
+        }
+      } else {
+        debug("dropping bad packet", hash, checksig, checkid, checktime);
       }
     } else {
-      debug("dropping bad packet", hash, checksig, checkid, checktime);
+      debug("skipping packet with no payload", hash, unpacked);
     }
     // forward first-seen message to all connected wires
     // TODO: block flooders
