@@ -23,6 +23,26 @@ This is a functional prototype. It's pre-alpha quality software. Be careful.
 
 Try the [demo server](https://chr15m.github.io/bugout/) and [client](https://chr15m.github.io/bugout/client.html) to get started.
 
+## Install
+
+Using npm:
+
+	npm i chr15m/bugout
+
+Script tag:
+
+	<script src="https://chr15m.github.io/bugout.min.js"></script>
+
+Clojurescript:
+
+	:install-deps false
+	:npm-deps {"bugout" "chr15m/bugout"}
+	:foreign-libs [{:file "node_modules/bugout/bugout.min.js"
+	                :provides ["cljsjs.bugout"]
+	                :global-exports {cljsjs.bugout Bugout}}]
+
+	(:require [cljsjs.bugout :as Bugout])
+
 ## API
 
 To create a server in a tab:
