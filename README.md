@@ -22,20 +22,23 @@ To create a server in a tab:
 ```javascript
 var b = new Bugout();
 
+// get the server address (public key) to share with clients
+alert(b.pk);
+
 // register an API call the remote user can make
 b.register("ping", function(pk, args, callback) {
-  // modify the message and reply
+  // modify the passed arguments and reply
   args.hello = "Hello from " + b.pk;
   callback(message);
 });
 
 // save this server's session key seed to re-use
-localStorage["bugout-seed"] = b.seed;
+localStorage["bugout-server-seed"] = b.seed;
 
 // passing this back in to Bugout() means the
 // server-public-key stays the same between reloads
 // for example:
-// b = new Bugout({seed: localStorage["bugout-seed"]});
+// b = new Bugout({seed: localStorage["bugout-server-seed"]});
 ```
 
 To start a client connection specify the server's public key to connect to:
@@ -43,7 +46,7 @@ To start a client connection specify the server's public key to connect to:
 ```javascript
 var b = new Bugout("server-public-key");
 
-// wait to seen the server's pk
+// wait until we see the server
 // (can take a minute to tunnel through firewalls etc.)
 b.on("server", function(pk) {
   // once we can see the server
@@ -59,24 +62,24 @@ b.on("server", function(pk) {
 localStorage["bugout-seed"] = JSON.stringify(b.seed);
 ```
 
-Both clients and servers can interact with other connected peers:
+Both clients and servers can interact with other connected clients:
 
 ```javascript
 // receive all out-of-band messages from the server
-// or from another client
+// or from any other another connected client
 b.on("message", function(pk, message) {
   console.log("message from", pk, "is", message);
 });
 
-// broadcast an unecrypted message to all connected peers
+// broadcast an unecrypted message to all connected clients
 b.send({"hello": "all!"});
 
-// send an encrypted message to a specific peer
-b.send(some-pk, "Hello!");
+// send an encrypted message to a specific client
+b.send(clientpk, "Hello!");
 
-// whenever we see a new peer in this group
+// whenever we see a new client in this group
 b.on("seen", function(pk) {
-  // e.g. send a message to the peer we've seen with this pk
+  // e.g. send a message to the client we've seen with this pk
 });
 
 // you can also close a bugout channel to stop receiving messages etc.
