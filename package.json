@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "babel-minify": "^0.4.3",
     "bencode": "^2.0.0",
     "bs58": "^4.0.1",
     "debug": "^3.1.0",
@@ -9,8 +8,8 @@
     "webtorrent": "^0.102.0"
   },
   "devDependencies": {
-    "browserify": "^16.2.2",
-    "uglify-es": "^3.3.9"
+    "babel-minify": "^0.4.3",
+    "browserify": "^16.2.2"
   },
   "main": "index.js",
   "name": "bugout",
