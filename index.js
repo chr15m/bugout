@@ -18,6 +18,7 @@ var utf8decoder = new TextDecoder("utf8");
  * Multi-party data channels on WebTorrent extension.
  */
 function Bugout(identifier, opts) {
+  // TODO: option to pass shared secret to encrypt group traffic
   if (identifier && typeof(identifier) == "object") {
     opts = identifier;
     identifier = null;
@@ -38,10 +39,11 @@ function Bugout(identifier, opts) {
   this.keyPair = opts["keyPair"] || nacl.sign.keyPair.fromSeed(bs58.decode(this.seed));
   // ephemeral encryption key only used for this session
   this.keyPairEncrypt = nacl.box.keyPair();
-  
+
   this.pk = bs58.encode(this.keyPair.publicKey);
   this.ek = bs58.encode(this.keyPairEncrypt.publicKey);
   
+  // TODO: generate identifier & address from hash of pk
   this.identifier = identifier || this.pk;
   this.peers = {}; // list of peers seen recently: pk -> ek, timestamp
   this.seen = {}; // messages we've seen recently: hash -> timestamp
@@ -79,8 +81,10 @@ Bugout.prototype.send = function(pk, message) {
 }
 
 Bugout.prototype.rpc = function(pk, call, args, callback) {
+  // TODO: make pk optional and use server pk if set
   var callnonce = nacl.randomBytes(8);
   var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
+  // TODO: clean up the callbacks table (single use only?)
   this.callbacks[toHex(callnonce)] = callback;
   packet = encryptPacket(this, pk, packet);
   sendRaw(this, packet);
