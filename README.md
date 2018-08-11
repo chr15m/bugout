@@ -2,9 +2,10 @@
 
 Build back-end web services that **run in a browser tab**, and:
 
- * Can be reached by other browsers via WebRTC.
+ * Don't require the user to have a domain or SSL cert.
  * Can be deployed by users by simply opening a browser tab.
  * Can be "self-hosted" by users by leaving a browser tab open on a PC.
+ * Can be reached over WebRTC.
 
 ### The old way:
 
