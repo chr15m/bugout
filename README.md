@@ -31,7 +31,7 @@ Using npm:
 
 Script tag:
 
-	<script src="https://chr15m.github.io/bugout.min.js"></script>
+	<script src="https://chr15m.github.io/bugout/bugout.min.js"></script>
 
 Clojurescript:
 
