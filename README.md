@@ -113,3 +113,8 @@ var b = new Bugout("some shared group identifier");
 ```javascript
 localStorage.debug = "bugout";
 ```
+
+### The FAMGA virus
+
+> Infected with the [FAMGA](https://duckduckgo.com/?q=FAMGA) virus everybody's eating brains. Time to grab yr bugout box & hit the forest.
+
