@@ -6,16 +6,25 @@ Build back-end web services that **run in a browser tab**, and:
  * Don't require an SSL certificate.
  * Can be reached by other browsers via WebRTC.
  * Can be deployed by users by simply opening a browser tab.
+ * Can be "self-hosted" by users by leaving a browser tab open on a PC.
+
+### The old way:
+
+<p align="center"><img src="docs/bugout-old-way.svg"/></p>
+
+### The new way:
+
+<p align="center"><img src="docs/bugout-new-way.svg"/></p>
 
 Bugout is a small attempt to re-decentralize the web.
 
 This is a functional prototype. It's pre-alpha quality software. Be careful.
 
-### Quick start
+## Quick start
 
 Try the [demo server](https://chr15m.github.io/bugout/) and [client](https://chr15m.github.io/bugout/client.html) to get started.
 
-### How to use it
+## API
 
 To create a server in a tab:
 
@@ -86,7 +95,7 @@ b.on("seen", function(pk) {
 b.close();
 ```
 
-Note that you can connect to a generic group without a server by simply using a non-public-key identifier which can be any string as long as it's the same for every client connecting:
+Note that you can connect to a generic peer-to-peer group without a server by simply using a non-public-key identifier which can be any string as long as it's the same for every client connecting:
 
 ```javascript
 var b = new Bugout("some shared group identifier");
@@ -95,9 +104,9 @@ var b = new Bugout("some shared group identifier");
 ### Options
 
  * `wt` - a [WebTorrent instance](https://webtorrent.io/docs) to re-use. Pass this in if you're making connections to multiple Bugout channels.
- * `seed` - bs58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
+ * `seed` - base58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
  * `keyPair` - pass [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures) directly rather than a seed.
- * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:stun.l.google.com:19305"} ... ]`
+ * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`
 
 ### Turn on debug logging
 
