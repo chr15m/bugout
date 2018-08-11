@@ -1,10 +1,11 @@
 <p align="center"><img src="docs/bugout-logo.svg"/></p>
 
-Build back-end web services that run in a browser tab, and:
+Build back-end web services that **run in a browser tab**, and:
 
  * Don't require a domain name.
  * Don't require an SSL certificate.
  * Can be reached by other browsers via WebRTC.
+ * Can be deployed by users by simply opening a browser tab.
 
 Bugout is a small attempt to re-decentralize the web.
 
