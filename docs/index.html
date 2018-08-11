@@ -11,6 +11,7 @@
 <body>
 <h3 id="pk"></h3>
 <p>This browser tab is running a Bugout service.</p>
+<p>Open a <a href="client.html" id="client">client tab</a> to connect back here.</p>
 <textarea id="api" rows="20"></textarea>
 <button id="reload">reload</button>
 <pre id="log"></pre>
@@ -24,6 +25,8 @@
   localStorage["bugout-seed"] = b.seed;
   // display this server's address
   document.getElementById("pk").innerHTML = b.pk;
+  // update the client link to use it
+  document.getElementById("client").href += "#" + b.pk;
   // log events as they happen
   function log(prefix) {
     return function(pk) {

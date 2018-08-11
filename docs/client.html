@@ -22,7 +22,7 @@ b.on("server", console.log.bind(null, "server"));
 b.on("seen", console.log.bind(null, "seen"));
 
 // watch for messages from server and others
-b.on("message", console.log.bind("message"));
+b.on("message", console.log.bind(null, "message"));
 </pre>
 
 <p>Then wait until you see the server connection message.</p>
@@ -39,6 +39,16 @@ b.send("This is my message.");
 b.send("SERVER-ADDRESS", "Hello server.");
 </pre>
 </body>
+<script>
+// update the address if one was passed in
+var pk = window.location.hash.substr(1);
+if (pk) {
+  var pretags = document.getElementsByTagName("pre");
+  for (var p=0; p<pretags.length; p++) {
+    pretags[p].innerHTML = pretags[p].innerHTML.replace("SERVER-ADDRESS", pk);
+  }
+}
+</script>
 <style>
   * { 
     box-sizing: border-box;
