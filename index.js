@@ -51,6 +51,7 @@ function Bugout(identifier, opts) {
   // rpc api functions and pending callback functions
   this.api = {};
   this.callbacks = {};
+  this.serverpk = null;
   
   debug("identifier", this.identifier);
   debug("public key", this.pk);
@@ -82,6 +83,14 @@ Bugout.prototype.send = function(pk, message) {
 
 Bugout.prototype.rpc = function(pk, call, args, callback) {
   // TODO: make pk optional and use server pk if set
+  // check if they have passed the arguments as call, args, callback
+  // with implicity pk being serverpk
+  if (this.serverpk && typeof(args) == "function") {
+    callback = args;
+    args = call;
+    call = pk;
+    pk = this.serverpk;
+  }
   var callnonce = nacl.randomBytes(8);
   var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
   // TODO: clean up the callbacks table (single use only?)
@@ -232,6 +241,7 @@ function sawPeer(bugout, pk, ek, identifier) {
       };
       bugout.emit("seen", pk);
       if (pk == identifier) {
+        bugout.serverpk = pk;
         bugout.emit("server", pk);
       }
     } else {
