@@ -1,8 +1,7 @@
-## Server-in-a-tab: web-service bug-out bag.
+<p align="center"><img src="bugout-logo.svg"/></p>
 
-Bugout helps you create web services that:
+Build back-end web services that run in a browser tab, and:
 
- * Run out of a browser tab.
  * Don't require a domain name.
  * Don't require an SSL certificate.
  * Can be reached by other browsers via WebRTC.
