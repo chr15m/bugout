@@ -16,13 +16,19 @@
 var b = new Bugout("SERVER-ADDRESS");
 
 // watch for connection to the server
-b.on("server", console.log.bind(null, "server"))
+b.on("server", console.log.bind(null, "server"));
+
 // watch for other parties joining server group
-b.on("seen", console.log.bind(null, "seen"))
+b.on("seen", console.log.bind(null, "seen"));
+
 // watch for messages from server and others
 b.on("message", console.log.bind("message"));
 
+// wait until you see the server connection message
+// this can take a minute
+
 // make an RPC API call on the server and log the result
+b.rpc("ping", {"Hello": "world"}, console.log);
 
 // Send a message to anyone listening (unencrypted)
 b.send("This is my message.");
