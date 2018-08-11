@@ -81,6 +81,11 @@ Bugout.prototype.send = function(pk, message) {
   sendRaw(this, packet);
 }
 
+Bugout.prototype.register = function(call, fn, docstring) {
+  this.api[call] = fn;
+  this.api[call].docstring = docstring;
+}
+
 Bugout.prototype.rpc = function(pk, call, args, callback) {
   // TODO: make pk optional and use server pk if set
   // check if they have passed the arguments as call, args, callback
