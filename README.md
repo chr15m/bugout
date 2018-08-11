@@ -1,4 +1,4 @@
-<p align="center"><img src="bugout-logo.svg"/></p>
+<p align="center"><img src="docs/bugout-logo.svg"/></p>
 
 Build back-end web services that run in a browser tab, and:
 
