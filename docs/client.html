@@ -27,7 +27,7 @@ b.on("message", console.log.bind(null, "message"));
 </pre>
 
 <p>Then wait until you see the server connection message.</p>
-<p>this can take a minute while WebRTC connects.</p>
+<p>This can take a minute or two while WebRTC connects.</p>
 
 <pre>
 // make an RPC API call on the server and log the result
@@ -61,6 +61,12 @@ if (pk) {
     font-size: 1.25em;
     text-align: center;
     margin: auto;
+    width: 100%;
+    padding: 0.5em;
+  }
+
+  img {
+    max-width: 100%;
   }
 
   pre {
@@ -68,6 +74,8 @@ if (pk) {
     padding: 0.5em;
     border-radius: 3px;
     text-align: left;
+    word-wrap: break-word;
+    white-space: pre-wrap;
   }
 </style>
 </html>

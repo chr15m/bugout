@@ -12,7 +12,8 @@
 <img src="bugout-logo.svg"/>
 <h3 id="pk"></h3>
 <p>This browser tab is running a Bugout service.</p>
-<p>Open a <a href="client.html" target="_NEW" id="client">client tab</a> to connect back here.</p>
+<p><a href="client.html" target="_NEW" id="client">Open a client</a> to connect back here. The client can be on a different machine or network.</p>
+<p>Edit the code this server is running:</p>
 <textarea id="api" rows="20"></textarea>
 <button id="reload">reload</button>
 <pre id="log"></pre>
@@ -82,6 +83,13 @@
     font-size: 1.25em;
     text-align: center;
     margin: auto;
+    width: 100%;
+    padding: 0.5em;
+  }
+
+  h3 {
+    word-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   textarea {
@@ -102,12 +110,18 @@
     margin-top: 0.5em;
   }
 
+  img {
+    max-width: 100%;
+  }
+
   pre {
     max-width: 100%;
     max-width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
     text-align: left;
+    word-wrap: break-word;
+    white-space: pre-wrap;
   }
 </style>
 </html>
