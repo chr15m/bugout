@@ -23,10 +23,12 @@ b.on("seen", console.log.bind(null, "seen"));
 
 // watch for messages from server and others
 b.on("message", console.log.bind("message"));
+</pre>
 
-// wait until you see the server connection message
-// this can take a minute
+<p>Then wait until you see the server connection message.</p>
+<p>this can take a minute while WebRTC connects.</p>
 
+<pre>
 // make an RPC API call on the server and log the result
 b.rpc("ping", {"Hello": "world"}, console.log);
 
