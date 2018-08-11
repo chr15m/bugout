@@ -94,4 +94,10 @@ Note that you can connect to a generic group without a server by simply using a 
  * `wt` - a [WebTorrent instance](https://webtorrent.io/docs) to re-use. Pass this in if you're making connections to multiple Bugout channels.
  * `seed` - bs58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
  * `keyPair` - pass [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures) directly rather than a seed.
+ * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:stun.l.google.com:19305"} ... ]`
 
+### Turn on debug logging
+
+```javascript
+	localStorage.debug = "bugout";
+```
