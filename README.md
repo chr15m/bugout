@@ -27,21 +27,27 @@ Try the [demo server](https://chr15m.github.io/bugout/) and [client](https://chr
 
 Using npm:
 
-	npm i chr15m/bugout
+```shell
+npm i chr15m/bugout
+```
 
 Script tag:
 
-	<script src="https://chr15m.github.io/bugout/bugout.min.js"></script>
+```html
+<script src="https://chr15m.github.io/bugout/bugout.min.js"></script>
+```
 
 Clojurescript:
 
-	:install-deps false
-	:npm-deps {"bugout" "chr15m/bugout"}
-	:foreign-libs [{:file "node_modules/bugout/bugout.min.js"
-	                :provides ["cljsjs.bugout"]
-	                :global-exports {cljsjs.bugout Bugout}}]
+```clojure
+:install-deps false
+:npm-deps {"bugout" "chr15m/bugout"}
+:foreign-libs [{:file "node_modules/bugout/bugout.min.js"
+		:provides ["cljsjs.bugout"]
+		:global-exports {cljsjs.bugout Bugout}}]
 
-	(:require [cljsjs.bugout :as Bugout])
+(:require [cljsjs.bugout :as Bugout])
+```
 
 ## API
 
