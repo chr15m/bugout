@@ -15,13 +15,15 @@ Build back-end web services that **run in a browser tab**, and:
 
 <p align="center"><img src="docs/bugout-new-way.svg"/></p>
 
-Bugout is a small attempt to re-decentralize the web.
+[Bugout is a humble attempt to re-decentralize the web a little](https://chr15m.github.io/on-self-hosting-and-decentralized-software.html).
 
 This is a functional prototype. It's pre-alpha quality software. Be careful.
 
 ## Quick start
 
 Try the [demo server](https://chr15m.github.io/bugout/) and [client](https://chr15m.github.io/bugout/client.html) to get started.
+
+Or try the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html) running live on a server tab somewhere.
 
 ## Install
 
