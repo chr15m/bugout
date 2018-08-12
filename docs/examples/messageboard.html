@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="yes" name="mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <title>Bugout messageboard example</title>
+  <script src="../bugout.min.js" type="application/javascript"></script>
+</head>
+<body>
+<img src="../bugout-logo.svg"/>
+<p>Bugout message board example.</p>
+<input id="message" maxlength="279" placeholder="Your message..."/>
+<button id="send">send</button>
+<pre id="messages">
+</pre>
+</body>
+<script>
+var b = new Bugout("8NgiPVtEBCACjufbpJGfayCu1PfCP9G3DdkJubr1YcKg");
+
+var msglist = document.getElementById("messages");
+msglist.innerHTML = "Loading messages...";
+
+// events
+
+// if the user clicks the send button
+document.getElementById("send").onclick = function(ev) {
+  var m = document.getElementById("message");
+  if (m.value) {
+    msglist.innerHTML = "Sending message...";
+    b.rpc("post", m.value, function () {
+      // refreshMessages();
+      // server will send refresh message if messages are changed
+    });
+    m.value = "";
+  }
+}
+
+// watch for connection to the server
+b.on("server", function() {
+  refreshMessages();
+});
+
+// if the server tells us to refresh messages
+b.on("message", function(pk, message) {
+  if (message == "refresh") {
+    refreshMessages();
+  }
+});
+
+// utility functions
+
+function refreshMessages() {
+  msglist.innerHTML = "Refreshing messages...";
+  // get a list of the messages
+  b.rpc("list", null, function(messages) {
+    updateMessagelist(messages);
+  });
+}
+
+function updateMessagelist(messages) {
+  msglist.innerHTML =
+    messages.map(function (m) {
+      return (new Date(m.t)).toString() + "\n" +
+      "From: " + m.pk + "\n" +
+      "\n" + m.m + "\n";
+    }).join("\n\n");
+}
+</script>
+<style>
+  * { 
+    box-sizing: border-box;
+  }
+
+  body {
+    max-width: 800px;
+    font-family: Arial;
+    font-size: 1.25em;
+    text-align: center;
+    margin: auto;
+    width: 100%;
+    padding: 0.5em;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  pre {
+    width: 100%;
+    padding: 0.5em;
+    border-radius: 3px;
+    text-align: left;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  input {
+    width: 100%;
+  }
+  
+  button {
+    border-radius: 5px;
+    background-color: #008C28;
+    color: white;
+    border: none;
+    padding: 0.25em 1em;
+    font-size: 1.25em;
+    float: right;
+    margin-top: 0.5em;
+  }
+
+</style>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="yes" name="mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <title>Bugout messageboard example: server</title>
+  <script src="../bugout.min.js" type="application/javascript"></script>
+</head>
+<body>
+<img src="../bugout-logo.svg"/>
+<p>Messageboard demo server.</p>
+<h3 id="pk"></h3>
+<p><a href="messageboard.html" target="_NEW" id="client">Open the client</a> to connect back here.</p>
+<h3>Messages received:</h3>
+<pre id="messages"></pre>
+<p>Code this server is running:</p>
+<textarea id="api" rows="20"></textarea>
+<button id="reload">reload</button>
+<pre id="log"></pre>
+</body>
+<script>
+  // recall previously saved keypair seed
+  var seed = localStorage["bugout-messageboard-seed"];
+  // instantiate our bugout instance
+  var b = new Bugout({seed: seed});
+  // save the seed for next time
+  localStorage["bugout-messageboard-seed"] = b.seed;
+  // display this server's address
+  document.getElementById("pk").innerHTML = b.pk;
+  // update the client link to use it
+  document.getElementById("client").href += "#" + b.pk;
+  // log events as they happen
+  function log(prefix) {
+    return function(pk) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      document.getElementById("log").innerHTML += "+" +
+        Math.round((new Date()).getTime() / 1000) + " " +
+        prefix + " " +
+        (pk ? pk.substr(0, 8) + ".. " : "") +
+        args.map(function(a) {
+          return (a ? a.toString() : "");
+        }).join(" ") + "\n";
+    }
+  }
+  log("log started")();
+  b.on("seen", log("saw:"));
+  b.on("rpc", log("rpc:"));
+  b.on("message", log("msg:"));
+  // reference to the API code textarea
+  var api = document.getElementById("api");
+  // function to reload the API from the textarea
+  function reload() {
+    b.api = {};
+    eval(api.value);
+    localStorage["bugout-api"] = api.value;
+  }
+  // check for locally saved API or load from bundled api.js
+  var savedapi = localStorage["bugout-api"];
+  if (savedapi) {
+    api.value = savedapi;
+    reload();
+  } else {
+    fetch("messageboard.js").then(function(js) {
+      js.text().then(function(data) {
+        api.value = data;
+        reload();
+      });
+    });
+  }
+  // when the user clicks the reload button
+  document.getElementById("reload").onclick = function() {
+    reload();
+  }
+</script>
+<style>
+  * { 
+    box-sizing: border-box;
+  }
+
+  body {
+    max-width: 800px;
+    font-family: Arial;
+    font-size: 1.25em;
+    text-align: center;
+    margin: auto;
+    width: 100%;
+    padding: 0.5em;
+  }
+
+  h3 {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  textarea {
+    width: 100%;
+    padding: 0.5em;
+    border-radius: 3px;
+    border: 1px solid silver;
+  }
+
+  button {
+    border-radius: 5px;
+    background-color: #008C28;
+    color: white;
+    border: none;
+    padding: 0.25em 1em;
+    font-size: 1.25em;
+    float: right;
+    margin-top: 0.5em;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  pre {
+    max-width: 100%;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: left;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+</style>
+</html>
