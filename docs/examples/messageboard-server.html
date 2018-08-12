@@ -54,10 +54,10 @@
   function reload() {
     b.api = {};
     eval(api.value);
-    localStorage["bugout-api"] = api.value;
+    localStorage["bugout-messageboard-api"] = api.value;
   }
   // check for locally saved API or load from bundled api.js
-  var savedapi = localStorage["bugout-api"];
+  var savedapi = localStorage["bugout-messageboard-api"];
   if (savedapi) {
     api.value = savedapi;
     reload();
