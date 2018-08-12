@@ -38,7 +38,7 @@
         prefix + " " +
         (pk ? pk.substr(0, 8) + ".. " : "") +
         args.map(function(a) {
-          return a.toString();
+          return (a ? a.toString() : "");
         }).join(" ") + "\n";
     }
   }
