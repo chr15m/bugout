@@ -11,6 +11,7 @@
 <body>
 <img src="../bugout-logo.svg"/>
 <p>Bugout message board example.</p>
+<p>connected: <span id="connected">no</span></p>
 <input id="message" maxlength="279" placeholder="Your message..."/>
 <button id="send">send</button>
 <pre id="messages"></pre>
@@ -48,6 +49,14 @@ b.on("message", function(pk, message) {
     refreshMessages();
   }
 });
+
+// if we see a wire join or leave
+b.on("wire", updateWires);
+b.on("left", updateWires);
+
+function updateWires(count) {
+  document.getElementById("connected").innerHTML = count ? "yes (" + count + ")" : "no";
+}
 
 // utility functions
 
