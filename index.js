@@ -98,7 +98,6 @@ Bugout.prototype.rpc = function(pk, call, args, callback) {
   }
   var callnonce = nacl.randomBytes(8);
   var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
-  // TODO: clean up the callbacks table (single use only?)
   this.callbacks[toHex(callnonce)] = callback;
   packet = encryptPacket(this, pk, packet);
   sendRaw(this, packet);
@@ -195,6 +194,7 @@ function onMessage(bugout, identifier, wire, message) {
           var nonce = toHex(packet.rn);
           if (bugout.callbacks[nonce]) {
             bugout.callbacks[nonce](JSON.parse(utf8decoder.decode(packet.rr)));
+            delete bugout.callbacks[nonce];
           } else {
             debug("dropped response with no callback.", nonce);
           }
