@@ -141,6 +141,8 @@ function sendRaw(bugout, message) {
   for (var w=0; w<wires.length; w++) {
     wires[w].extended(EXT, message);
   }
+  var hash = toHex(nacl.hash(message).slice(16));
+  debug("sent", hash, "to", wires.length, "wires");
 }
 
 // incoming
@@ -197,6 +199,9 @@ function onMessage(bugout, identifier, wire, message) {
           } else {
             debug("dropped response with no callback.", nonce);
           }
+        } else if (packet.y == "p") {
+          debug("ping from", pk);
+          bugout.emit("ping", pk);
         } else {
           // TODO: handle ping/keep-alive message
           debug("unknown packet type");
@@ -248,6 +253,9 @@ function sawPeer(bugout, pk, ek, identifier) {
         bugout.serverpk = pk;
         bugout.emit("server", pk);
       }
+      // ping them back so they know about us too
+      var packet = makePacket(bugout, {"y": "p"});
+      sendRaw(bugout, packet);
     } else {
       bugout.peers[pk].ek = ek;
       bugout.peers[pk].last = t;
