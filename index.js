@@ -266,7 +266,7 @@ function attach(bugout, identifier, wire, addr) {
 
 function detach(bugout, identifier, wire) {
   debug("lost wire", wire.peerId, identifier);
-  bugout.emit("left", identifier, wire);
+  bugout.emit("left", bugout.torrent.wires.length, wire);
 }
 
 function extension(bugout, identifier, wire) {
@@ -285,6 +285,7 @@ function wirefn(bugout, identifier, wire) {
 
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
   debug("extended handshake", wire.peerId, handshake);
+  bugout.emit("wire", bugout.torrent.wires.length, wire);
   sawPeer(bugout, utf8decoder.decode(handshake.pk), utf8decoder.decode(handshake.ek), identifier);
 }
 
