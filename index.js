@@ -18,7 +18,7 @@ var utf8decoder = new TextDecoder("utf8");
  * Multi-party data channels on WebTorrent extension.
  */
 function Bugout(identifier, opts) {
-  // TODO: option to pass shared secret to encrypt group traffic
+  // TODO: option to pass shared secret to encrypt swarm traffic
   if (identifier && typeof(identifier) == "object") {
     opts = identifier;
     identifier = null;
@@ -87,9 +87,8 @@ Bugout.prototype.register = function(call, fn, docstring) {
 }
 
 Bugout.prototype.rpc = function(pk, call, args, callback) {
-  // TODO: make pk optional and use server pk if set
   // check if they have passed the arguments as call, args, callback
-  // with implicity pk being serverpk
+  // with implicit pk being serverpk
   if (this.serverpk && typeof(args) == "function") {
     callback = args;
     args = call;

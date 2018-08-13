@@ -113,7 +113,7 @@ b.send({"hello": "all!"});
 // send an encrypted message to a specific client
 b.send(clientpk, "Hello!");
 
-// whenever we see a new client in this group
+// whenever we see a new client in this swarm
 b.on("seen", function(pk) {
   // e.g. send a message to the client we've seen with this pk
 });
@@ -122,10 +122,10 @@ b.on("seen", function(pk) {
 b.close();
 ```
 
-Note that you can connect to a generic peer-to-peer group without a server by simply using a non-public-key identifier which can be any string as long as it's the same for every client connecting:
+Note that you can connect to a generic peer-to-peer swarm without a server by simply using a non-public-key identifier which can be any string as long as it's the same for every client connecting:
 
 ```javascript
-var b = new Bugout("some shared group identifier");
+var b = new Bugout("some shared swarm identifier");
 ```
 
 ### Options
