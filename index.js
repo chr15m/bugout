@@ -178,7 +178,7 @@ function onMessage(bugout, identifier, wire, message) {
       if (checksig && checkid && checktime) {
         // message is authenticated
         var ek = utf8decoder.decode(packet.ek);
-        sawPeer(bugout, pk, ek);
+        sawPeer(bugout, pk, ek, identifier);
         // check packet types
         if (packet.y == "m") {
           debug("message", identifier, packet);
