@@ -70,27 +70,6 @@
   // reference to the API code textarea
   var api = document.getElementById("api");
 
-  // function to reload the API from the textarea
-  function reload() {
-    b.api = {};
-    eval(api.value);
-    localStorage["bugout-demo-api"] = api.value;
-  }
-
-  // check for locally saved API or load from bundled api.js
-  var savedapi = localStorage["bugout-demo-api"];
-  if (savedapi) {
-    api.value = savedapi;
-    reload();
-  } else {
-    fetch("api.js").then(function(js) {
-      js.text().then(function(data) {
-        api.value = data;
-        reload();
-      });
-    });
-  }
-
   // add a codemirror editor
   var editor = CodeMirror.fromTextArea(document.getElementById("api"), {
     lineNumbers: true,
@@ -99,9 +78,31 @@
     extraKeys: {"Ctrl-Q": "toggleComment"}
   });
 
+  // function to reload the API from the textarea
+  function reload(code) {
+    if (code) {
+      editor.getDoc().setValue(code);
+    }
+    editor.save();
+    b.api = {};
+    eval(api.value);
+    localStorage["bugout-demo-api"] = api.value;
+  }
+
+  // check for locally saved API or load from bundled api.js
+  var savedapi = localStorage["bugout-demo-api"];
+  if (savedapi) {
+    reload(savedapi);
+  } else {
+    fetch("api.js").then(function(js) {
+      js.text().then(function(data) {
+        reload(data);
+      });
+    });
+  }
+
   // when the user clicks the reload button
   document.getElementById("reload").onclick = function() {
-    editor.save();
     reload();
   }
 </script>
