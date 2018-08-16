@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/bugout-logo.svg"/></p>
 
-Build back-end web services that **run in a browser tab**. [Live demo](https://chr15m.github.io/bugout).
+Build back-end web services that **run in a browser tab**. **[Live demo](https://chr15m.github.io/bugout)**.
 
- * Don't require the end user to have a domain or SSL cert.
+ * Host backend services without a VPS, domain or SSL cert.
  * Anyone can deploy by simply opening a browser tab.
  * Can be "self-hosted" by leaving a browser tab open on a PC.
  * Client-server over WebRTC instead of HTTPS.
