@@ -40,7 +40,7 @@ Clojurescript:
 ```clojure
 :install-deps false
 :npm-deps {"bugout" "chr15m/bugout"}
-:foreign-libs [{:file "node_modules/bugout/bugout.min.js"
+:foreign-libs [{:file "node_modules/bugout/docs/bugout.min.js"
 		:provides ["cljsjs.bugout"]
 		:global-exports {cljsjs.bugout Bugout}}]
 
