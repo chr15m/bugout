@@ -19,7 +19,7 @@ Build back-end web services that **run in a browser tab**. **[Live demo](https:/
 
 This is a functional prototype. It's pre-alpha quality software. Be careful.
 
-Try the [demo](https://chr15m.github.io/), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html).
+Try the [demo](https://chr15m.github.io/bugout), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html).
 
 ## Install
 
