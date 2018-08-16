@@ -225,15 +225,17 @@ function onMessage(bugout, identifier, wire, message) {
 // network functions
 
 function rpcCall(bugout, pk, call, args, nonce, callback) {
+  var packet = {"y": "rr", "rn": nonce};
   if (bugout.api[call]) {
     bugout.api[call](pk, args, function(result) {
-      var packet = makePacket(bugout, {"y": "rr", "rn": nonce, "rr": JSON.stringify(result)});
-      packet = encryptPacket(bugout, pk, packet);
-      sendRaw(bugout, packet);
-    })
+      packet["rr"] = JSON.stringify(result);
+    });
   } else {
-    return {"error": "No such function"}
+    packet["rr"] = JSON.stringify({"error": "No such API call."});
   }
+  packet = makePacket(bugout, packet);
+  packet = encryptPacket(bugout, pk, packet);
+  sendRaw(bugout, packet);
 }
 
 function sawPeer(bugout, pk, ek, identifier) {
