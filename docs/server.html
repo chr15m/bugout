@@ -6,30 +6,50 @@
   <meta content="yes" name="mobile-web-app-capable">
   <meta content="black" name="apple-mobile-web-app-status-bar-style">
   <title>Bugout test page</title>
+  <link href="style.css" rel="stylesheet">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/codemirror.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/mode/javascript/javascript.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/addon/edit/matchbrackets.min.js"></script>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/codemirror.min.css" rel="stylesheet">
+  <script src="//cdn.rawgit.com/papnkukn/qrcode-svg/master/dist/qrcode.min.js"></script>
   <script src="bugout.min.js" type="application/javascript"></script>
 </head>
 <body>
 <img src="bugout-logo.svg"/>
+<h3>Demo server</h3>
+<p>This browser tab is running a Bugout server with this address:</p>
 <h3 id="pk"></h3>
-<p>This browser tab is running a Bugout service.</p>
-<p><a href="client.html" target="_NEW" id="client">Open a client</a> to connect back here. The client can be on a different machine or network.</p>
-<p>Edit the code this server is running:</p>
+<div id="qr"></div>
+<p><a href="index.html" target="_NEW" id="client">Connect back to this server-in-a-tab</a> from this or another device.</p>
+<p>You can also edit the code this server is running below to change the live API:</p>
 <textarea id="api" rows="20"></textarea>
 <button id="reload">reload</button>
 <pre id="log"></pre>
 </body>
 <script>
   // recall previously saved keypair seed
-  var seed = localStorage["bugout-seed"];
+  var seed = localStorage["bugout-demo-seed"];
+
   // instantiate our bugout instance
   var b = new Bugout({seed: seed});
+
   // save the seed for next time
-  localStorage["bugout-seed"] = b.seed;
+  localStorage["bugout-demo-seed"] = b.seed;
+
   // display this server's address
   document.getElementById("pk").innerHTML = b.pk;
+
+  // figure out the URL for this server
+  var URL = document.location.href.split("#")[0].replace("server.html", "") + "#" + b.pk;
+  
   // update the client link to use it
-  document.getElementById("client").href += "#" + b.pk;
-  // log events as they happen
+  document.getElementById("client").href = URL;
+
+  // update the QR code link
+  var qrcode = new QRCode(URL).svg();
+  document.getElementById("qr").innerHTML = qrcode;
+
+  // function to add to the log
   function log(prefix) {
     return function(pk) {
       var args = Array.prototype.slice.call(arguments, 1);
@@ -46,16 +66,19 @@
   b.on("seen", log("saw:"));
   b.on("rpc", log("rpc:"));
   b.on("message", log("msg:"));
+
   // reference to the API code textarea
   var api = document.getElementById("api");
+
   // function to reload the API from the textarea
   function reload() {
     b.api = {};
     eval(api.value);
-    localStorage["bugout-api"] = api.value;
+    localStorage["bugout-demo-api"] = api.value;
   }
+
   // check for locally saved API or load from bundled api.js
-  var savedapi = localStorage["bugout-api"];
+  var savedapi = localStorage["bugout-demo-api"];
   if (savedapi) {
     api.value = savedapi;
     reload();
@@ -67,61 +90,19 @@
       });
     });
   }
+
+  // add a codemirror editor
+  var editor = CodeMirror.fromTextArea(document.getElementById("api"), {
+    lineNumbers: true,
+    matchBrackets: true,
+    continueComments: "Enter",
+    extraKeys: {"Ctrl-Q": "toggleComment"}
+  });
+
   // when the user clicks the reload button
   document.getElementById("reload").onclick = function() {
+    editor.save();
     reload();
   }
 </script>
-<style>
-  * { 
-    box-sizing: border-box;
-  }
-
-  body {
-    max-width: 800px;
-    font-family: Arial;
-    font-size: 1.25em;
-    text-align: center;
-    margin: auto;
-    width: 100%;
-    padding: 0.5em;
-  }
-
-  h3 {
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
-
-  textarea {
-    width: 100%;
-    padding: 0.5em;
-    border-radius: 3px;
-    border: 1px solid silver;
-  }
-
-  button {
-    border-radius: 5px;
-    background-color: #008C28;
-    color: white;
-    border: none;
-    padding: 0.25em 1em;
-    font-size: 1.25em;
-    float: right;
-    margin-top: 0.5em;
-  }
-
-  img {
-    max-width: 100%;
-  }
-
-  pre {
-    max-width: 100%;
-    max-width: 100%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-align: left;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
-</style>
 </html>

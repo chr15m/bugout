@@ -1,11 +1,11 @@
 <p align="center"><img src="docs/bugout-logo.svg"/></p>
 
-Build back-end web services that **run in a browser tab**, and:
+Build back-end web services that **run in a browser tab**. [Live demo](https://chr15m.github.io/bugout).
 
- * Don't require the user to have a domain or SSL cert.
- * Can be deployed by users by simply opening a browser tab.
- * Can be "self-hosted" by users by leaving a browser tab open on a PC.
- * Can be reached over WebRTC.
+ * Don't require the end user to have a domain or SSL cert.
+ * Anyone can deploy by simply opening a browser tab.
+ * Can be "self-hosted" by leaving a browser tab open on a PC.
+ * Client-server over WebRTC instead of HTTPS.
 
 ### The old way:
 
@@ -19,11 +19,7 @@ Build back-end web services that **run in a browser tab**, and:
 
 This is a functional prototype. It's pre-alpha quality software. Be careful.
 
-## Quick start
-
-Try the [demo server](https://chr15m.github.io/bugout/) and [client](https://chr15m.github.io/bugout/client.html) to get started.
-
-Or try the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html) running live on a server tab somewhere.
+Try the [demo](https://chr15m.github.io/), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html).
 
 ## Install
 
@@ -51,14 +47,15 @@ Clojurescript:
 (:require [cljsjs.bugout :as Bugout])
 ```
 
-## API
+## Use
 
-To create a server in a tab:
+To create a Bugout server that runs in a browser tab:
 
 ```javascript
 var b = new Bugout();
 
 // get the server address (public key) to share with clients
+// this is what clients will use to connect back to this server
 alert(b.pk);
 
 // register an API call the remote user can make
@@ -77,7 +74,7 @@ localStorage["bugout-server-seed"] = b.seed;
 // b = new Bugout({seed: localStorage["bugout-server-seed"]});
 ```
 
-To start a client connection specify the server's public key to connect to:
+To start a client connection specify the server's public key to connect to (`b.pk` from the server):
 
 ```javascript
 var b = new Bugout("server-public-key");

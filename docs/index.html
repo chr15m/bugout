@@ -6,76 +6,104 @@
   <meta content="yes" name="mobile-web-app-capable">
   <meta content="black" name="apple-mobile-web-app-status-bar-style">
   <title>Bugout client test page</title>
+  <link href="style.css" rel="stylesheet">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/javascript.min.js"></script>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/codemirror.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/mode/javascript/javascript.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/addon/edit/matchbrackets.min.js"></script>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/codemirror.min.css" rel="stylesheet">
   <script src="bugout.min.js" type="application/javascript"></script>
 </head>
 <body>
 <img src="bugout-logo.svg"/>
-<h3 id="pk"></h3>
-<p>Bugout client library loaded.</p>
-<p>Open the developer console and connect to a server like this:</p>
-<pre>
-var b = new Bugout("SERVER-ADDRESS");
+<h3>Demo client</h3>
+<p class="instructions">This demo connects to a live Bugout server using its public address and then runs the "ping" function on that server and displays the result in the log below.</p>
+<p class="instructions">You can also <a href="server.html" target="_NEW">run a copy of the Bugout server in your own browser tab</a> to try it out locally on your machine.</p>
+<pre><code id="source" class="javascript">
+// connect to server using its public address
+var b = new Bugout("8NgiPVtEBCACjufbpJGfayCu1PfCP9G3DdkJubr1YcKg");
 
-// watch for connection to the server
-b.on("server", console.log.bind(null, "server"));
+log("Connecting to the server...\n(this can take a minute)")();
 
-// watch for other parties joining server group
-b.on("seen", console.log.bind(null, "seen"));
+// wait for connection to the server
+b.on("server", function() {
+  // ok, we're connected
+  log("Connected to the server.")();
+  // make an RPC API call on the server and log the result
+  b.rpc("ping", {"Hello": "world"}, log("response:"));
+  // show a simple UI for testing the server API
+  showUI();
+});
 
-// watch for messages from server and others
-b.on("message", console.log.bind(null, "message"));
-</pre>
+// also watch for other peers joining this server's swarm
+b.on("seen", log("seen:"));
 
-<p>Then wait until you see the server connection message.</p>
-<p>This can take a minute or two while WebRTC connects.</p>
+</code></pre>
+<div id="ui" style="display: none;">
+  <textarea id="user">
+// make your own calls to the server
+b.rpc("ping", {"Hello": "world"}, log("response:"));
+  </textarea>
+  <button id="run">run</button>
+</div>
+<h3>Log</h3>
 
-<pre>
-// make an RPC API call on the server and log the result
-b.rpc("ping", {"Hello": "world"}, console.log);
-
-// Send a message to anyone listening (unencrypted)
-b.send("This is my message.");
-
-// Send a message to the server specifically (encrypted)
-b.send("SERVER-ADDRESS", "Hello server.");
-</pre>
+<pre id="log"></pre>
 </body>
 <script>
+hljs.initHighlightingOnLoad();
+
+// log events as they happen
+function log(prefix) {
+  return function() {
+    var args = Array.prototype.slice.call(arguments);
+    var msg = prefix + " " +
+      args.map(function(a) {
+        return (a ? JSON.stringify(a) : "");
+      }).join(" ") + "\n";
+    document.getElementById("log").innerHTML += msg;
+    console.log(msg);
+  }
+}
+
+var source = document.getElementById("source");
+var user = document.getElementById("user");
+
 // update the address if one was passed in
 var pk = window.location.hash.substr(1);
 if (pk) {
-  var pretags = document.getElementsByTagName("pre");
-  for (var p=0; p<pretags.length; p++) {
-    pretags[p].innerHTML = pretags[p].innerHTML.replace("SERVER-ADDRESS", pk);
+  source.innerHTML = source.innerHTML.replace("8NgiPVtEBCACjufbpJGfayCu1PfCP9G3DdkJubr1YcKg", pk);
+  var instructions = document.getElementsByClassName("instructions");
+  for (var i=0; i<instructions.length; i++) {
+    instructions[i].style.display = "none";
   }
 }
+
+// reference to the codemirror editor
+var editor = null;
+
+// function to show the rpc ui once connected
+function showUI() {
+  document.getElementById("ui").style = "block";
+  // add a codemirror editor
+  editor = CodeMirror.fromTextArea(document.getElementById("user"), {
+    lineNumbers: true,
+    matchBrackets: true,
+    continueComments: "Enter",
+    extraKeys: {"Ctrl-Q": "toggleComment"}
+  });
+  editor.setSize(null, 80);
+}
+
+// when the user clicks the reload button
+document.getElementById("run").onclick = function() {
+  editor.save();
+  eval(user.value);
+}
+
+// run the code in the pre tags
+eval(source.innerHTML);
 </script>
-<style>
-  * { 
-    box-sizing: border-box;
-  }
-
-  body {
-    max-width: 800px;
-    font-family: Arial;
-    font-size: 1.25em;
-    text-align: center;
-    margin: auto;
-    width: 100%;
-    padding: 0.5em;
-  }
-
-  img {
-    max-width: 100%;
-  }
-
-  pre {
-    width: 100%;
-    padding: 0.5em;
-    border-radius: 3px;
-    text-align: left;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
-</style>
 </html>

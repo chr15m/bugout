@@ -1,0 +1,73 @@
+* { 
+  box-sizing: border-box;
+}
+
+body {
+  max-width: 800px;
+  font-family: Arial;
+  font-size: 1.25em;
+  text-align: center;
+  margin: auto;
+  width: 100%;
+  padding: 0.5em;
+}
+
+a {
+  color: #008C28;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+p.instructions {
+  text-align: justify;
+}
+
+h3 {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.5em;
+  border-radius: 3px;
+  border: 1px solid silver;
+}
+
+button {
+  border-radius: 5px;
+  background-color: #008C28;
+  color: white;
+  border: none;
+  padding: 0.25em 1em;
+  font-size: 1.25em;
+  float: right;
+  margin-top: 0.5em;
+}
+
+img {
+  max-width: 100%;
+}
+
+pre {
+  max-width: 100%;
+  width: 100%;
+  padding: 0.5em;
+  border-radius: 3px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-align: left;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+code {
+  border-radius: 0.25em;
+}
+
+.CodeMirror {
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  height: auto;
+}
+
