@@ -34,6 +34,7 @@ b.on("server", function() {
   log("Connected to the server.")();
   // make an RPC API call on the server and log the result
   b.rpc("ping", {"Hello": "world"}, log("response:"));
+  // watch for {"Hello": "world", "pong": true} in the log below
   // show a simple UI for testing the server API
   showUI();
 });
