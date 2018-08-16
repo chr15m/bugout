@@ -23,7 +23,7 @@
 <p class="instructions">You can also <a href="server.html" target="_NEW">run a copy of the Bugout server in your own browser tab</a> to try it out locally on your machine.</p>
 <pre><code id="source" class="javascript">
 // connect to server using its public address
-var b = new Bugout("8NgiPVtEBCACjufbpJGfayCu1PfCP9G3DdkJubr1YcKg");
+var b = new Bugout("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1");
 
 log("Connecting to the server...\n(this can take a minute)")();
 
@@ -74,7 +74,7 @@ var user = document.getElementById("user");
 // update the address if one was passed in
 var pk = window.location.hash.substr(1);
 if (pk) {
-  source.innerHTML = source.innerHTML.replace("8NgiPVtEBCACjufbpJGfayCu1PfCP9G3DdkJubr1YcKg", pk);
+  source.innerHTML = source.innerHTML.replace("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1", pk);
   var instructions = document.getElementsByClassName("instructions");
   for (var i=0; i<instructions.length; i++) {
     instructions[i].style.display = "none";
