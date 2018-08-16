@@ -45,8 +45,8 @@
     }
   }
   log("log started")();
-  b.on("wire", log("wire connect:));
-  b.on("left", log("wire close:));
+  b.on("wire", log("wire connect:"));
+  b.on("left", log("wire close:"));
   b.on("seen", log("saw:"));
   b.on("rpc", log("rpc:"));
   b.on("message", log("msg:"));
