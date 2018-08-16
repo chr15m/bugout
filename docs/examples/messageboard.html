@@ -12,8 +12,10 @@
 <img src="../bugout-logo.svg"/>
 <p>Bugout message board example.</p>
 <p>connected: <span id="connected">no</span></p>
-<input id="message" maxlength="279" placeholder="Your message..."/>
-<button id="send">send</button>
+<div id="ui" style="display: none">
+  <input id="message" maxlength="279" placeholder="Your message..."/>
+  <button id="send">send</button>
+</div>
 <pre id="messages"></pre>
 <p><a href="messageboard-server.html" target="_NEW">Fire up your own copy of the server.</a></p>
 </body>
@@ -55,6 +57,9 @@ b.on("wire", updateWires);
 b.on("left", updateWires);
 
 function updateWires(count) {
+  if (count) {
+    document.getElementById("ui").style.display = "block";
+  }
   document.getElementById("connected").innerHTML = count ? "yes (" + count + ")" : "no";
 }
 
