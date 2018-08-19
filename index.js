@@ -251,9 +251,11 @@ function sawPeer(bugout, pk, ek, identifier) {
         "last": t,
       };
       bugout.emit("seen", pk);
+      debug("seen", pk);
       if (pk == identifier) {
         bugout.serverpk = pk;
         bugout.emit("server", pk);
+        debug("seen server", pk);
       }
       // ping them back so they know about us too
       var packet = makePacket(bugout, {"y": "p"});
@@ -274,7 +276,7 @@ function attach(bugout, identifier, wire, addr) {
 }
 
 function detach(bugout, identifier, wire) {
-  debug("lost wire", wire.peerId, identifier);
+  debug("wire left", wire.peerId, identifier);
   bugout.emit("left", bugout.torrent.wires.length, wire);
 }
 
@@ -293,7 +295,7 @@ function wirefn(bugout, identifier, wire) {
 }
 
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
-  debug("extended handshake", wire.peerId, handshake);
+  debug("wire extended handshake", wire.peerId, handshake);
   bugout.emit("wire", bugout.torrent.wires.length, wire);
   sawPeer(bugout, utf8decoder.decode(handshake.pk), utf8decoder.decode(handshake.ek), identifier);
 }
