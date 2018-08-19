@@ -27,6 +27,8 @@ function Bugout(identifier, opts) {
   if (!(this instanceof Bugout)) return new Bugout(identifier, opts);
   
   this.wt = opts.wt || new WebTorrent(opts.iceServers ? {tracker: {rtcConfig: {iceServers: opts.iceServers}}} : null);
+  this.nacl = nacl;
+
   
   if (opts["seed"]) {
     this.seed = opts["seed"];
