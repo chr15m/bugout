@@ -1,6 +1,5 @@
-docs/bugout.min.js: index.js
-	npm run minifiy
-	mv bugout.min.js docs/
+docs/bugout.min.js: bugout.js
+	npm run minify
 
-bugout.js: index.js
-	npm run build
+bugout.js: index.js $(shell find ./node_modules -type f -name '*.js')
+	npm run compile

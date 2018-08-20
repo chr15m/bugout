@@ -14,8 +14,9 @@
   "main": "index.js",
   "name": "bugout",
   "scripts": {
-    "build": "browserify -s Bugout index.js > bugout.js",
-    "minify": "npm run build && cat bugout.js | minify > bugout.min.js",
+    "build": "npm run compile && npm run minify",
+    "minify": "cat bugout.js | minify > bugout.min.js",
+    "compile": "browserify -s Bugout index.js > bugout.js",
     "size": "npm run build && cat bugout.min.js | gzip | wc -c"
   },
   "version": "0.0.1"
