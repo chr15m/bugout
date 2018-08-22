@@ -184,11 +184,22 @@ function onMessage(bugout, identifier, wire, message) {
         // check packet types
         if (packet.y == "m") {
           debug("message", identifier, packet);
-          bugout.emit("message", pk, JSON.parse(utf8decoder.decode(packet.v)), packet);
+          var messagestring = utf8decoder.decode(packet.v);
+          try {
+            bugout.emit("message", pk, JSON.parse(messagestring), packet);
+          } catch(e) {
+            debug("Malformed message JSON: " + messagestring);
+          }
         } else if (packet.y == "r") { // rpc call
           debug("rpc", identifier, packet);
           var call = utf8decoder.decode(packet.c);
-          var args = JSON.parse(utf8decoder.decode(packet.a));
+          var argsstring = utf8decoder.decode(packet.a);
+          try {
+            var args = JSON.parse(argsstring);
+          } catch(e) {
+            var args = null;
+            debug("Malformed args JSON: " + argsstring);
+          }
           var nonce = packet.rn;
           bugout.emit("rpc", pk, call, args, toHex(nonce));
           // make the API call and send back response
@@ -196,7 +207,12 @@ function onMessage(bugout, identifier, wire, message) {
         } else if (packet.y == "rr") { // rpc response
           var nonce = toHex(packet.rn);
           if (bugout.callbacks[nonce]) {
-            bugout.callbacks[nonce](JSON.parse(utf8decoder.decode(packet.rr)));
+            var responsestring = utf8decoder.decode(packet.rr);
+            try {
+              bugout.callbacks[nonce](JSON.parse(responsestring));
+            } catch(e) {
+              debug("Malformed response JSON: " + responsestring);
+            }
             delete bugout.callbacks[nonce];
           } else {
             debug("dropped response with no callback.", nonce);
