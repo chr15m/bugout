@@ -12,7 +12,6 @@ inherits(Bugout, EventEmitter);
 
 var EXT = "bo_channel";
 var PEERTIMEOUT = 5 * 60 * 1000;
-var utf8decoder = new TextDecoder("utf8");
 
 /**
  * Multi-party data channels on WebTorrent extension.
@@ -89,8 +88,12 @@ Bugout.prototype.register = function(call, fn, docstring) {
 }
 
 Bugout.prototype.rpc = function(pk, call, args, callback) {
-  // check if they have passed the arguments as call, args, callback
-  // with implicit pk being serverpk
+  // my kingdom for multimethods lol
+  // calling styles:
+  // pk, call, args, callback
+  // pk, call, callback (no args)
+  // call, args, callback (implicit server pk)
+  // call, callback (no args, implicit server pk)
   if (this.serverpk && typeof(args) == "function") {
     callback = args;
     args = call;
@@ -158,7 +161,7 @@ function onMessage(bugout, identifier, wire, message) {
     var unpacked = bencode.decode(message);
     // if this is an encrypted packet first try to decrypt it
     if (unpacked.e && unpacked.n && unpacked.ek) {
-      var ek = utf8decoder.decode(unpacked.ek);
+      var ek = unpacked.ek.toString();
       debug("message encrypted by", ek, unpacked);
       var decrypted = nacl.box.open(unpacked.e, unpacked.n, bs58.decode(ek), bugout.keyPairEncrypt.secretKey);
       if (decrypted) {
@@ -171,20 +174,20 @@ function onMessage(bugout, identifier, wire, message) {
     if (unpacked && unpacked.p) {
       debug("unpacked message", unpacked);
       var packet = bencode.decode(unpacked.p);
-      var pk = utf8decoder.decode(packet.pk);
-      var id = utf8decoder.decode(packet.i);
+      var pk = packet.pk.toString();
+      var id = packet.i.toString();
       var checksig = nacl.sign.detached.verify(unpacked.p, unpacked.s, bs58.decode(pk));
       var checkid = id == identifier;
       var checktime = packet.t + bugout.timeout > t;
       debug("packet", packet);
       if (checksig && checkid && checktime) {
         // message is authenticated
-        var ek = utf8decoder.decode(packet.ek);
+        var ek = packet.ek.toString();
         sawPeer(bugout, pk, ek, identifier);
         // check packet types
         if (packet.y == "m") {
           debug("message", identifier, packet);
-          var messagestring = utf8decoder.decode(packet.v);
+          var messagestring = packet.v.toString();
           try {
             bugout.emit("message", pk, JSON.parse(messagestring), packet);
           } catch(e) {
@@ -192,8 +195,8 @@ function onMessage(bugout, identifier, wire, message) {
           }
         } else if (packet.y == "r") { // rpc call
           debug("rpc", identifier, packet);
-          var call = utf8decoder.decode(packet.c);
-          var argsstring = utf8decoder.decode(packet.a);
+          var call = packet.c.toString();
+          var argsstring = packet.a.toString();
           try {
             var args = JSON.parse(argsstring);
           } catch(e) {
@@ -207,7 +210,7 @@ function onMessage(bugout, identifier, wire, message) {
         } else if (packet.y == "rr") { // rpc response
           var nonce = toHex(packet.rn);
           if (bugout.callbacks[nonce]) {
-            var responsestring = utf8decoder.decode(packet.rr);
+            var responsestring = packet.rr.toString();
             try {
               bugout.callbacks[nonce](JSON.parse(responsestring));
             } catch(e) {
@@ -315,7 +318,7 @@ function wirefn(bugout, identifier, wire) {
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
   debug("wire extended handshake", wire.peerId, handshake);
   bugout.emit("wire", bugout.torrent.wires.length, wire);
-  sawPeer(bugout, utf8decoder.decode(handshake.pk), utf8decoder.decode(handshake.ek), identifier);
+  sawPeer(bugout, handshake.pk.toString(), handshake.ek.toString(), identifier);
 }
 
 // utility fns
