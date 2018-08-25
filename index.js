@@ -31,7 +31,6 @@ function Bugout(identifier, opts) {
   
   this.wt = opts.wt || new WebTorrent(opts.iceServers ? {tracker: {rtcConfig: {iceServers: opts.iceServers}}} : null);
   this.nacl = nacl;
-
   
   if (opts["seed"]) {
     this.seed = opts["seed"];
@@ -60,7 +59,12 @@ function Bugout(identifier, opts) {
   debug("public key", this.pk);
   debug("encryption key", this.ek);
   
-  var blob = new File([this.identifier], this.identifier);
+  if (typeof(File) == "object") {
+    var blob = new File([this.identifier], this.identifier);
+  } else {
+    var blob = new Buffer.from(this.identifier);
+    blob.name = this.identifier;
+  }
   var torrent = this.wt.seed(blob, {"name": this.identifier}, (debug, "joined", this.identifier));
   torrent.on("wire", partial(attach, this, this.identifier));
   this.torrent = torrent;
