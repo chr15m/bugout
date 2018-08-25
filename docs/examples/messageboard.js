@@ -15,9 +15,9 @@ function updateMessagelist(messages) {
 }
 updateMessagelist(messages);
 
-b.register("post", function(pk, message, cb) {
+b.register("post", function(address, message, cb) {
   if (typeof(message) == "string" && message.length < 280) {
-    messages.push({pk: pk, m: message, t: (new Date()).getTime()});
+    messages.push({address: address, m: message, t: (new Date()).getTime()});
     console.log("messages pre", messages);
     messages = messages.slice(Math.max(0, messages.length - 10));
     localStorage["bugout-messageboard"] = JSON.stringify(messages);
@@ -30,6 +30,6 @@ b.register("post", function(pk, message, cb) {
   }
 }, "Post a message to the board");
 
-b.register("list", function(pk, args, cb) {
+b.register("list", function(address, args, cb) {
   cb(messages.slice().reverse());
 }, "List most recent messages");

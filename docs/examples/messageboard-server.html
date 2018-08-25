@@ -11,7 +11,7 @@
 <body>
 <img src="../bugout-logo.svg"/>
 <p>Messageboard demo server.</p>
-<h3 id="pk"></h3>
+<h3 id="address"></h3>
 <p><a href="messageboard.html" target="_NEW" id="client">Open the client</a> to connect back here.</p>
 <h3>Messages received:</h3>
 <pre id="messages"></pre>
@@ -28,17 +28,17 @@
   // save the seed for next time
   localStorage["bugout-messageboard-seed"] = b.seed;
   // display this server's address
-  document.getElementById("pk").innerHTML = b.pk;
+  document.getElementById("address").innerHTML = b.address();
   // update the client link to use it
-  document.getElementById("client").href += "#" + b.pk;
+  document.getElementById("client").href += "#" + b.address();
   // log events as they happen
   function log(prefix) {
-    return function(pk) {
-      var args = Array.prototype.slice.call(arguments, typeof(pk) == "string" ? 1 : 0);
+    return function(address) {
+      var args = Array.prototype.slice.call(arguments, typeof(address) == "string" ? 1 : 0);
       document.getElementById("log").innerHTML += "+" +
         Math.round((new Date()).getTime() / 1000) + " " +
         prefix + " " +
-        (typeof(pk) == "string" ? pk.substr(0, 8) + ".. " : "") +
+        (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
         args.map(function(a) {
           return (a ? a.toString() : "");
         }).join(" ") + "\n";

@@ -25,7 +25,7 @@
 // connect to server using its public address
 var b = new Bugout("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1");
 
-log("My address is " + b.pk)();
+log("My address is " + b.address())();
 log("Connecting to the server...\n(this can take a minute)")();
 
 // wait for connection to the server
@@ -74,9 +74,9 @@ var source = document.getElementById("source");
 var user = document.getElementById("user");
 
 // update the address if one was passed in
-var pk = window.location.hash.substr(1);
-if (pk) {
-  source.innerHTML = source.innerHTML.replace("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1", pk);
+var address = window.location.hash.substr(1);
+if (address) {
+  source.innerHTML = source.innerHTML.replace("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1", address);
   var instructions = document.getElementsByClassName("instructions");
   for (var i=0; i<instructions.length; i++) {
     instructions[i].style.display = "none";

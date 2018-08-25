@@ -46,7 +46,7 @@ b.on("server", function() {
 });
 
 // if the server tells us to refresh messages
-b.on("message", function(pk, message) {
+b.on("message", function(address, message) {
   if (message == "refresh") {
     refreshMessages();
   }
@@ -77,7 +77,7 @@ function updateMessagelist(messages) {
   msglist.innerHTML =
     messages.map(function (m) {
       return (new Date(m.t)).toString() + "\n" +
-      "From: " + m.pk + "\n" +
+      "From: " + m.address + "\n" +
       "\n" + m.m + "\n";
     }).join("\n\n");
 }

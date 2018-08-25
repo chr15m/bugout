@@ -7,11 +7,15 @@ var nacl = require("tweetnacl");
 var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
 var bs58 = require("bs58");
+var bs58chk = require("base58check");
+var ripemd160 = require("ripemd160");
 
 inherits(Bugout, EventEmitter);
 
 var EXT = "bo_channel";
 var PEERTIMEOUT = 5 * 60 * 1000;
+var SEEDPREFIX = "490a";
+var ADDRESSPREFIX = "55";
 
 /**
  * Multi-party data channels on WebTorrent extension.
@@ -32,27 +36,25 @@ function Bugout(identifier, opts) {
   if (opts["seed"]) {
     this.seed = opts["seed"];
   } else {
-    this.seed = bs58.encode(nacl.randomBytes(32));
+    this.seed = bs58chk.encode(Buffer.from(nacl.randomBytes(32)), SEEDPREFIX);
   }
 
   this.timeout = PEERTIMEOUT;
-  
-  this.keyPair = opts["keyPair"] || nacl.sign.keyPair.fromSeed(bs58.decode(this.seed));
+  this.keyPair = opts["keyPair"] || nacl.sign.keyPair.fromSeed(Uint8Array.from(bs58chk.decode(this.seed).data).slice(1));
   // ephemeral encryption key only used for this session
   this.keyPairEncrypt = nacl.box.keyPair();
 
   this.pk = bs58.encode(this.keyPair.publicKey);
   this.ek = bs58.encode(this.keyPairEncrypt.publicKey);
   
-  // TODO: generate identifier & address from hash of pk
-  this.identifier = identifier || this.pk;
-  this.peers = {}; // list of peers seen recently: pk -> ek, timestamp
+  this.identifier = identifier || this.address();
+  this.peers = {}; // list of peers seen recently: address -> pk, ek, timestamp
   this.seen = {}; // messages we've seen recently: hash -> timestamp
 
   // rpc api functions and pending callback functions
   this.api = {};
   this.callbacks = {};
-  this.serverpk = null;
+  this.serveraddress = null;
   
   debug("identifier", this.identifier);
   debug("public key", this.pk);
@@ -66,18 +68,31 @@ function Bugout(identifier, opts) {
   // TODO: send ping/keepalive message
 }
 
+Bugout.prototype.address = function(pk) {
+  if (pk) {
+    pk = bs58.decode(pk);
+  } else {
+    pk = this.keyPair.publicKey;
+  }
+  return bs58chk.encode(new ripemd160().update(Buffer.from(nacl.hash(pk))).digest(), ADDRESSPREFIX);
+}
+
 Bugout.prototype.close = function(struct) {
   this.wt.remove(struct.torrent)
 }
 
-Bugout.prototype.send = function(pk, message) {
+Bugout.prototype.send = function(address, message) {
   if (!message) {
-    var message = pk;
-    var pk = null;
+    var message = address;
+    var address = null;
   }
   var packet = makePacket(this, {"y": "m", "v": JSON.stringify(message)});
-  if (pk) {
-    packet = encryptPacket(this, pk, packet);
+  if (address) {
+    if (this.peers[address]) {
+      packet = encryptPacket(this, this.peers[address].pk, packet);
+    } else {
+      throw address + " not seen - no public key.";
+    }
   }
   sendRaw(this, packet);
 }
@@ -87,24 +102,29 @@ Bugout.prototype.register = function(call, fn, docstring) {
   this.api[call].docstring = docstring;
 }
 
-Bugout.prototype.rpc = function(pk, call, args, callback) {
+Bugout.prototype.rpc = function(address, call, args, callback) {
   // my kingdom for multimethods lol
   // calling styles:
-  // pk, call, args, callback
-  // pk, call, callback (no args)
-  // call, args, callback (implicit server pk)
-  // call, callback (no args, implicit server pk)
-  if (this.serverpk && typeof(args) == "function") {
+  // address, call, args, callback
+  // address, call, callback (no args)
+  // call, args, callback (implicit server address)
+  // call, callback (no args, implicit server address)
+  if (this.serveraddress && typeof(args) == "function") {
     callback = args;
     args = call;
-    call = pk;
-    pk = this.serverpk;
+    call = address;
+    address = this.serveraddress;
   }
-  var callnonce = nacl.randomBytes(8);
-  var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
-  this.callbacks[toHex(callnonce)] = callback;
-  packet = encryptPacket(this, pk, packet);
-  sendRaw(this, packet);
+  if (this.peers[address]) {
+    var pk = this.peers[address].pk;
+    var callnonce = nacl.randomBytes(8);
+    var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
+    this.callbacks[toHex(callnonce)] = callback;
+    packet = encryptPacket(this, pk, packet);
+    sendRaw(this, packet);
+  } else {
+    throw address + " not seen - no public key.";
+  }
 }
 
 // outgoing
@@ -128,15 +148,15 @@ function makePacket(bugout, params) {
 }
 
 function encryptPacket(bugout, pk, packet) {
-  if (bugout.peers[pk]) {
+  if (bugout.peers[bugout.address(pk)]) {
     var nonce = nacl.randomBytes(nacl.box.nonceLength);
     packet = bencode.encode({
       "n": nonce,
       "ek": bs58.encode(bugout.keyPairEncrypt.publicKey),
-      "e": nacl.box(packet, nonce, bs58.decode(bugout.peers[pk].ek), bugout.keyPairEncrypt.secretKey),
+      "e": nacl.box(packet, nonce, bs58.decode(bugout.peers[bugout.address(pk)].ek), bugout.keyPairEncrypt.secretKey),
     });
   } else {
-    throw pk + " not seen - no encryption key.";
+    throw bugout.address(pk) + " not seen - no encryption key.";
   }
   return packet;
 }
@@ -189,7 +209,7 @@ function onMessage(bugout, identifier, wire, message) {
           debug("message", identifier, packet);
           var messagestring = packet.v.toString();
           try {
-            bugout.emit("message", pk, JSON.parse(messagestring), packet);
+            bugout.emit("message", bugout.address(pk), JSON.parse(messagestring), packet);
           } catch(e) {
             debug("Malformed message JSON: " + messagestring);
           }
@@ -204,7 +224,7 @@ function onMessage(bugout, identifier, wire, message) {
             debug("Malformed args JSON: " + argsstring);
           }
           var nonce = packet.rn;
-          bugout.emit("rpc", pk, call, args, toHex(nonce));
+          bugout.emit("rpc", bugout.address(pk), call, args, toHex(nonce));
           // make the API call and send back response
           rpcCall(bugout, pk, call, args, nonce);
         } else if (packet.y == "rr") { // rpc response
@@ -221,8 +241,8 @@ function onMessage(bugout, identifier, wire, message) {
             debug("dropped response with no callback.", nonce);
           }
         } else if (packet.y == "p") {
-          debug("ping from", pk);
-          bugout.emit("ping", pk);
+          debug("ping from", bugout.address(pk));
+          bugout.emit("ping", bugout.address(pk));
         } else {
           // TODO: handle ping/keep-alive message
           debug("unknown packet type");
@@ -260,30 +280,31 @@ function rpcCall(bugout, pk, call, args, nonce, callback) {
 }
 
 function sawPeer(bugout, pk, ek, identifier) {
-  debug("sawPeer", pk, ek);
+  debug("sawPeer", bugout.address(pk), ek);
   var t = now();
+  var address = bugout.address(pk);
   // ignore ourself
   if (pk != bugout.pk) {
     // if we haven't seen this peer for a while
-    if (!bugout.peers[pk] || bugout.peers[pk].last + bugout.timeout < t) {
-      bugout.peers[pk] = {
+    if (!bugout.peers[address] || bugout.peers[address].last + bugout.timeout < t) {
+      bugout.peers[address] = {
         "ek": ek,
         "pk": pk,
         "last": t,
       };
-      bugout.emit("seen", pk);
-      debug("seen", pk);
-      if (pk == identifier) {
-        bugout.serverpk = pk;
-        bugout.emit("server", pk);
-        debug("seen server", pk);
+      debug("seen", bugout.address(pk));
+      bugout.emit("seen", bugout.address(pk));
+      if (bugout.address(pk) == bugout.identifier) {
+        bugout.serveraddress = address;
+        debug("seen server", bugout.address(pk));
+        bugout.emit("server", bugout.address(pk));
       }
-      // ping them back so they know about us too
+      // send a ping out so they know about us too
       var packet = makePacket(bugout, {"y": "p"});
       sendRaw(bugout, packet);
     } else {
-      bugout.peers[pk].ek = ek;
-      bugout.peers[pk].last = t;
+      bugout.peers[address].ek = ek;
+      bugout.peers[address].last = t;
     }
   }
 }
@@ -316,7 +337,7 @@ function wirefn(bugout, identifier, wire) {
 }
 
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
-  debug("wire extended handshake", wire.peerId, handshake);
+  debug("wire extended handshake", bugout.address(handshake.pk.toString()), wire.peerId, handshake);
   bugout.emit("wire", bugout.torrent.wires.length, wire);
   sawPeer(bugout, handshake.pk.toString(), handshake.ek.toString(), identifier);
 }

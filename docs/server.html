@@ -18,7 +18,7 @@
 <img src="bugout-logo.svg"/>
 <h3>Demo server</h3>
 <p>This browser tab is running a Bugout server with this address:</p>
-<h3 id="pk"></h3>
+<h3 id="address"></h3>
 <div id="qr"></div>
 <p><a href="index.html" target="_NEW" id="client">Connect back to this server-in-a-tab</a> from this or another device.</p>
 <p>You can also edit the code this server is running below to change the live API:</p>
@@ -37,10 +37,10 @@
   localStorage["bugout-demo-seed"] = b.seed;
 
   // display this server's address
-  document.getElementById("pk").innerHTML = b.pk;
+  document.getElementById("address").innerHTML = b.address();
 
   // figure out the URL for this server
-  var URL = document.location.href.split("#")[0].replace("server.html", "") + "#" + b.pk;
+  var URL = document.location.href.split("#")[0].replace("server.html", "") + "#" + b.address();
   
   // update the client link to use it
   document.getElementById("client").href = URL;
@@ -51,12 +51,12 @@
 
   // function to add to the log
   function log(prefix) {
-    return function(pk) {
+    return function(address) {
       var args = Array.prototype.slice.call(arguments, 1);
       document.getElementById("log").innerHTML += "+" +
         Math.round((new Date()).getTime() / 1000) + " " +
         prefix + " " +
-        (pk ? pk.substr(0, 8) + ".. " : "") +
+        (address ? address.substr(0, 8) + ".. " : "") +
         args.map(function(a) {
           return (a ? a.toString() : "");
         }).join(" ") + "\n";
