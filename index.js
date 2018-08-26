@@ -272,7 +272,7 @@ function onMessage(bugout, identifier, wire, message) {
 function rpcCall(bugout, pk, call, args, nonce, callback) {
   var packet = {"y": "rr", "rn": nonce};
   if (bugout.api[call]) {
-    bugout.api[call](pk, args, function(result) {
+    bugout.api[call](bugout.address(pk), args, function(result) {
       packet["rr"] = JSON.stringify(result);
     });
   } else {
