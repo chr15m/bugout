@@ -3,9 +3,11 @@ var WebTorrent = require("webtorrent");
 var Bugout = require("./index.js");
 
 var wtest = new WebTorrent({dht: false, tracker: false});
+var wtest2 = new WebTorrent({dht: false, tracker: false});
 
 test.onFinish(function() {
   wtest.destroy();
+  wtest2.destroy();
 });
 
 test('Instantiation', function (t) {
@@ -26,5 +28,37 @@ test('Instantiation', function (t) {
   t.equal(b3.identifier, "bMuHpwCxcD5vhC5u7VKuajYu5RU7FUnaGJ", "client identifier");
   b3.torrent.on("infoHash", function() {
     t.equal(b3.torrent.infoHash, "d96fe55834a62d86e48573c132345c01a38f5ffd", "client infoHash");
+  });
+});
+
+test("Connectivity events", function(t) {
+  t.plan(5);
+
+  var bs = new Bugout({wt: wtest});
+  var bc = new Bugout(bs.address(), {wt: wtest2});
+
+  bc.on("wire", function(c) {
+    t.equal(c, 1, "client wire count");
+  });
+
+  bs.on("wire", function(c) {
+    t.equal(c, 1, "server wire count");
+  });
+
+  bc.on("seen", function(address) {
+    t.equal(address, bs.address(), "client remote address");
+  });
+
+  bs.on("seen", function(address) {
+    t.equal(address, bc.address(), "server remote address");
+  });
+
+  bc.on("server", function(address) {
+    t.equal(address, bs.address(), "server seen correct address");
+  });
+
+  // connect the two clients together
+  bs.torrent.on("infoHash", function() {
+    bs.torrent.addPeer("127.0.0.1:" + bc.wt.address().port);
   });
 });
