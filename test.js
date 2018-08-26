@@ -18,11 +18,9 @@ test('Instantiation', function (t) {
     t.equal(b1.torrent.infoHash, "28d878040b7d2f5215409373b415fb99bc0e6d88", "server infoHash");
   });
 
-  try {
+  t.throws(function() {
     var b2 = new Bugout({seed: "BohNtZ24TrgMwZTLx9VDLtcZARNVuCt5tnecAAxYtTBC8pC61uGN", wt: wtest});
-  } catch(e) {
-    t.equal(e.toString(), "Error: Invalid checksum", "invalid seed checksum");
-  }
+  }, "Error: Invalid checksum", "invalid seed checksum");
   
   var b3 = new Bugout("bMuHpwCxcD5vhC5u7VKuajYu5RU7FUnaGJ", {wt: wtest});
   t.equal(b3.identifier, "bMuHpwCxcD5vhC5u7VKuajYu5RU7FUnaGJ", "client identifier");
