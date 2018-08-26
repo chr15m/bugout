@@ -62,3 +62,49 @@ test("Connectivity events", function(t) {
     bs.torrent.addPeer("127.0.0.1:" + bc.wt.address().port);
   });
 });
+
+test("RPC and message passing", function(t) {
+  t.plan(7);
+
+  var bs = new Bugout({wt: wtest});
+  var bc = new Bugout(bs.address(), {wt: wtest2});
+
+  var msg = {"Hello": "world"};
+
+  bs.register("ping", function(address, args, cb) {
+    t.equal(address, bc.address(), "client rpc address");
+    args["pong"] = true;
+    cb(args);
+  });
+
+  bs.register("rpc", console.log.bind(null, "rpc"));
+
+  bs.on("seen", function(address) {
+    t.equal(address, bc.address(), "server seen client address");
+    bs.send(address, {"Hello": "world"});
+  });
+
+  bc.on("server", function(address) {
+    t.equal(address, bs.address(), "client seen server address");
+    bc.rpc("ping", msg, function(response) {
+      t.equal(response.Hello, "world", "RPC server response check value");
+      t.ok(response.pong, "RPC server response check pong");
+    });
+  });
+
+  bc.on("message", function(address, message) {
+    t.equal(address, bs.address(), "server message remote address");
+    t.deepEqual(message, msg, "server message content check");
+  });
+
+  // connect the two clients together
+  bs.torrent.on("infoHash", function() {
+    bs.torrent.addPeer("127.0.0.1:" + bc.wt.address().port);
+  });
+});
+
+// TODO: 3 party incomplete wire graph gossip & message recipientn tests
+// TODO: test RPC with each type of argument
+// TODO: more bad parameters & calls
+// TODO: check mutated keys yield cryptographic errors
+// TODO: test malformed JSON packets
