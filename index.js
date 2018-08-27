@@ -335,6 +335,7 @@ function extension(bugout, identifier, wire) {
 }
 
 function wirefn(bugout, identifier, wire) {
+  // TODO: sign handshake to prove key custody
   wire.extendedHandshake.id = identifier;
   wire.extendedHandshake.pk = bugout.pk;
   wire.extendedHandshake.ek = bugout.ek;
@@ -343,6 +344,7 @@ function wirefn(bugout, identifier, wire) {
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
   debug("wire extended handshake", bugout.address(handshake.pk.toString()), wire.peerId, handshake);
   bugout.emit("wire", bugout.torrent.wires.length, wire);
+  // TODO: check sig and drop on failure
   sawPeer(bugout, handshake.pk.toString(), handshake.ek.toString(), identifier);
 }
 
