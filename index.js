@@ -69,12 +69,19 @@ function Bugout(identifier, opts) {
     debug("torrent", bugout.identifier, torrent);
     bugout.emit("torrent", bugout.identifier, torrent);
     torrent.discovery.tracker.on("update", function(update) { bugout.emit("tracker", bugout.identifier, update); });
-    torrent.discovery.on("trackerAnnounce", function() { bugout.emit("announce", bugout.identifier); });
+    torrent.discovery.on("trackerAnnounce", function() {
+      bugout.emit("announce", bugout.identifier);
+      connection(bugout);
+    });
   }, this));
   torrent.on("wire", partial(attach, this, this.identifier));
   this.torrent = torrent;
   // TODO: background task to purge old .peers table of entries older than this.timeout
   // TODO: send ping/keepalive message
+}
+
+function connection(bugout) {
+  bugout.emit("connections", bugout.torrent.wires.length);
 }
 
 Bugout.prototype.address = function(pk) {
@@ -329,6 +336,7 @@ function attach(bugout, identifier, wire, addr) {
 function detach(bugout, identifier, wire) {
   debug("wire left", wire.peerId, identifier);
   bugout.emit("left", bugout.torrent.wires.length, wire);
+  connection(bugout);
 }
 
 function extension(bugout, identifier, wire) {
@@ -349,6 +357,7 @@ function wirefn(bugout, identifier, wire) {
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
   debug("wire extended handshake", bugout.address(handshake.pk.toString()), wire.peerId, handshake);
   bugout.emit("wire", bugout.torrent.wires.length, wire);
+  connection(bugout);
   // TODO: check sig and drop on failure
   sawPeer(bugout, handshake.pk.toString(), handshake.ek.toString(), identifier);
 }
