@@ -12,6 +12,7 @@
 <img src="../bugout-logo.svg"/>
 <p>Messageboard demo server.</p>
 <h3 id="address"></h3>
+<div id="connections">establishing...</div>
 <p><a href="messageboard.html" target="_NEW" id="client">Open the client</a> to connect back here.</p>
 <h3>Messages received:</h3>
 <pre id="messages"></pre>
@@ -50,6 +51,11 @@
   b.on("seen", log("saw:"));
   b.on("rpc", log("rpc:"));
   b.on("message", log("msg:"));
+  b.on("connections", function(c) {
+    console.log("connections", c);
+    document.getElementById("connections").innerHTML = c ? c + " wires connected" : "accepting connections";
+  });
+
   // reference to the API code textarea
   var api = document.getElementById("api");
   // function to reload the API from the textarea
