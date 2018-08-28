@@ -1,5 +1,5 @@
 var WebTorrent = require("webtorrent");
-var Bugout = require("./index.js");
+var Bugout = require("../../index.js");
 var wrtc = require("wrtc");
 
 var wt = new WebTorrent({tracker: {wrtc: wrtc}});
