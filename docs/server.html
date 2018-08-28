@@ -53,10 +53,12 @@
   function log(prefix) {
     return function(address) {
       var args = Array.prototype.slice.call(arguments, 1);
+      var logger = Function.prototype.bind.call(console.log, console);
+      logger.apply(console, ["logger", prefix].concat(Array.prototype.slice.call(arguments)));
       document.getElementById("log").innerHTML += "+" +
         Math.round((new Date()).getTime() / 1000) + " " +
         prefix + " " +
-        (address ? address.substr(0, 8) + ".. " : "") +
+        (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
         args.map(function(a) {
           return (a ? a.toString() : "");
         }).join(" ") + "\n";
