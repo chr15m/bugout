@@ -20,6 +20,7 @@
 <p>This browser tab is running a Bugout server with this address:</p>
 <h3 id="address"></h3>
 <div id="qr"></div>
+<div id="connections">establishing...</div>
 <p><a href="index.html" target="_NEW" id="client">Connect back to this server-in-a-tab</a> from this or another device.</p>
 <p>You can also edit the code this server is running below to change the live API:</p>
 <textarea id="api" rows="20"></textarea>
@@ -68,6 +69,17 @@
   b.on("seen", log("saw:"));
   b.on("rpc", log("rpc:"));
   b.on("message", log("msg:"));
+  
+  // connectivity
+  //b.on("torrent", log("torrent:"));
+  //b.on("announce", log("tracker announce:"));
+  //b.on("tracker", log("tracker update:"));
+  //b.on("wire", log("wire:"));
+
+  b.on("connections", function(c) {
+    console.log("connections", c);
+    document.getElementById("connections").innerHTML = c ? c + " wires connected" : "accepting connections";
+  });
 
   // reference to the API code textarea
   var api = document.getElementById("api");
