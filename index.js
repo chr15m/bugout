@@ -49,6 +49,7 @@ function Bugout(identifier, opts) {
   this.identifier = identifier || this.address();
   this.peers = {}; // list of peers seen recently: address -> pk, ek, timestamp
   this.seen = {}; // messages we've seen recently: hash -> timestamp
+  this.lastwirecount = null;
 
   // rpc api functions and pending callback functions
   this.api = {};
@@ -73,7 +74,7 @@ function Bugout(identifier, opts) {
     }
     torrent.discovery.on("trackerAnnounce", function() {
       bugout.emit("announce", bugout.identifier);
-      connection(bugout);
+      bugout.connections();
     });
   }, this));
   torrent.on("wire", partial(attach, this, this.identifier));
@@ -82,8 +83,12 @@ function Bugout(identifier, opts) {
   // TODO: send ping/keepalive message
 }
 
-function connection(bugout) {
-  bugout.emit("connections", bugout.torrent.wires.length);
+Bugout.prototype.connections = function() {
+  if (this.torrent.wires.length != this.lastwirecount) {
+    this.lastwirecount = this.torrent.wires.length;
+    this.emit("connections", this.torrent.wires.length);
+  }
+  return this.lastwirecount;
 }
 
 Bugout.prototype.address = function(pk) {
@@ -95,8 +100,8 @@ Bugout.prototype.address = function(pk) {
   return bs58chk.encode(new ripemd160().update(Buffer.from(nacl.hash(pk))).digest(), ADDRESSPREFIX);
 }
 
-Bugout.prototype.close = function(struct) {
-  this.wt.remove(struct.torrent)
+Bugout.prototype.close = function() {
+  this.wt.remove(this.torrent)
 }
 
 Bugout.prototype.send = function(address, message) {
@@ -338,7 +343,7 @@ function attach(bugout, identifier, wire, addr) {
 function detach(bugout, identifier, wire) {
   debug("wire left", wire.peerId, identifier);
   bugout.emit("left", bugout.torrent.wires.length, wire);
-  connection(bugout);
+  bugout.connections();
 }
 
 function extension(bugout, identifier, wire) {
@@ -359,7 +364,7 @@ function wirefn(bugout, identifier, wire) {
 function onExtendedHandshake(bugout, identifier, wire, handshake) {
   debug("wire extended handshake", bugout.address(handshake.pk.toString()), wire.peerId, handshake);
   bugout.emit("wire", bugout.torrent.wires.length, wire);
-  connection(bugout);
+  bugout.connections();
   // TODO: check sig and drop on failure
   sawPeer(bugout, handshake.pk.toString(), handshake.ek.toString(), identifier);
 }

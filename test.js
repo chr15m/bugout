@@ -32,10 +32,25 @@ test('Instantiation', function (t) {
 });
 
 test("Connectivity events", function(t) {
-  t.plan(5);
+  t.plan(7);
 
   var bs = new Bugout({wt: wtest});
   var bc = new Bugout(bs.address(), {wt: wtest2});
+
+  var clast = null;
+  var times = 2;
+  function connectioncounter(c) {
+    t.notEqual(clast, c, "connection count");
+    times -= 1;
+    clast = c;
+    if (!times) {
+      bs.removeListener("connections", connectioncounter);
+    }
+  }
+
+  bs.on("connections", connectioncounter);
+  bs.connections();
+  bs.connections();
 
   bc.on("wire", function(c) {
     t.equal(c, 1, "client wire count");

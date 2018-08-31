@@ -23,7 +23,7 @@
 <p class="instructions">You can also <a href="server.html" target="_NEW">run a copy of the Bugout server in your own browser tab</a> to try it out locally on your machine.</p>
 <pre><code id="source" class="javascript">
 // connect to server using its public address
-var b = new Bugout("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1");
+var b = new Bugout(window.location.hash.substr(1) || "bUH7ukDvd9R2xLLRKMKWZ1mGPkgdVfufye");
 
 log("My address is " + b.address())();
 log("Connecting to the server...\n(this can take a minute)")();
