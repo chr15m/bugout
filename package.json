@@ -20,7 +20,8 @@
     "build": "npm run compile && npm run minify",
     "minify": "cat bugout.js | minify > bugout.min.js",
     "compile": "browserify -s Bugout index.js > bugout.js",
-    "size": "npm run build && cat bugout.min.js | gzip | wc -c"
+    "size": "npm run build && cat bugout.min.js | gzip | wc -c",
+    "test": "node test.js"
   },
   "version": "0.0.1"
 }
