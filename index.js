@@ -68,7 +68,9 @@ function Bugout(identifier, opts) {
   var torrent = this.wt.seed(blob, {"name": this.identifier}, partial(function(bugout, torrent) {
     debug("torrent", bugout.identifier, torrent);
     bugout.emit("torrent", bugout.identifier, torrent);
-    torrent.discovery.tracker.on("update", function(update) { bugout.emit("tracker", bugout.identifier, update); });
+    if (torrent.discovery.tracker) {
+      torrent.discovery.tracker.on("update", function(update) { bugout.emit("tracker", bugout.identifier, update); });
+    }
     torrent.discovery.on("trackerAnnounce", function() {
       bugout.emit("announce", bugout.identifier);
       connection(bugout);
