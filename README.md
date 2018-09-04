@@ -131,7 +131,7 @@ var b = new Bugout("some shared swarm identifier");
  * `seed` - base58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
  * `keyPair` - pass [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures) directly rather than a seed.
  * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`
- * `announce` - use custom announce trackers to introduce peers. Only peers using the same trackers will find eachother.
+ * `announce` - use custom announce trackers to introduce peers e.g. `["wss://tracker...", ...]`. Only peers using the same trackers will find eachother.
 
 ### Nodejs
 
