@@ -1,4 +1,18 @@
 {
+  "name": "bugout",
+  "version": "0.0.1",
+  "description": "Backend web services over WebRTC.",
+  "main": "index.js",
+  "author": "Chris McCormick <chris@mccormick.cx>",
+  "homepage": "https://github.com/chr15m/bugout",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chr15m/bugout.git",
+    "web": "https://github.com/chr15m/bugout"
+  },
+  "bugs": {
+    "url": "https://github.com/chr15m/bugout/issues/"
+  },
   "dependencies": {
     "base58check": "^2.0.0",
     "bencode": "^2.0.0",
@@ -14,14 +28,11 @@
     "babel-minify": "^0.4.3",
     "browserify": "^16.2.2"
   },
-  "main": "index.js",
-  "name": "bugout",
   "scripts": {
     "build": "npm run compile && npm run minify",
     "minify": "cat bugout.js | minify > bugout.min.js",
     "compile": "browserify -s Bugout index.js > bugout.js",
     "size": "npm run build && cat bugout.min.js | gzip | wc -c",
     "test": "node test.js"
-  },
-  "version": "0.0.1"
+  }
 }

@@ -4,3 +4,4 @@ node_modules
 bugout.js
 test.log
 workspace
+SEED*.txt
