@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "bugout": "0.0.1",
+    "webtorrent": "^0.102.4",
+    "wrtc": "^0.2.0"
+  }
+}

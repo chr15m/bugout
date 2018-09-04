@@ -133,6 +133,10 @@ var b = new Bugout("some shared swarm identifier");
  * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`
  * `announce` - use custom announce trackers to introduce peers. Only peers using the same trackers will find eachother.
 
+### Nodejs
+
+Check out [the nodejs demo](./docs/examples/node/) for an example of running a Bugout service under Node. Note that the `wrtc` library is not that stable at the time of writing and running Bugout in headless Chrome or Firefox seems to work better.
+
 ### Turn on debug logging
 
 ```javascript
