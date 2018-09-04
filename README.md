@@ -54,14 +54,14 @@ To create a Bugout server that runs in a browser tab:
 ```javascript
 var b = new Bugout();
 
-// get the server address (public key) to share with clients
+// get the server address (public key hash) to share with clients
 // this is what clients will use to connect back to this server
-alert(b.pk);
+alert(b.address());
 
 // register an API call the remote user can make
-b.register("ping", function(pk, args, callback) {
+b.register("ping", function(address, args, callback) {
   // modify the passed arguments and reply
-  args.hello = "Hello from " + b.pk;
+  args.hello = "Hello from " + b.address();
   callback(message);
 });
 
@@ -74,14 +74,14 @@ localStorage["bugout-server-seed"] = b.seed;
 // b = new Bugout({seed: localStorage["bugout-server-seed"]});
 ```
 
-To start a client connection specify the server's public key to connect to (`b.pk` from the server):
+To start a client connection specify the server's public key to connect to (`b.address()` from the server):
 
 ```javascript
 var b = new Bugout("server-public-key");
 
 // wait until we see the server
 // (can take a minute to tunnel through firewalls etc.)
-b.on("server", function(pk) {
+b.on("server", function(address) {
   // once we can see the server
   // make an API call on it
   b.rpc("ping", {"hello": "world"}, function(result) {
@@ -100,19 +100,19 @@ Both clients and servers can interact with other connected clients:
 ```javascript
 // receive all out-of-band messages from the server
 // or from any other another connected client
-b.on("message", function(pk, message) {
-  console.log("message from", pk, "is", message);
+b.on("message", function(address, message) {
+  console.log("message from", address, "is", message);
 });
 
 // broadcast an unecrypted message to all connected clients
 b.send({"hello": "all!"});
 
 // send an encrypted message to a specific client
-b.send(clientpk, "Hello!");
+b.send(clientaddress, "Hello!");
 
 // whenever we see a new client in this swarm
-b.on("seen", function(pk) {
-  // e.g. send a message to the client we've seen with this pk
+b.on("seen", function(address) {
+  // e.g. send a message to the client we've seen with this address
 });
 
 // you can also close a bugout channel to stop receiving messages etc.
