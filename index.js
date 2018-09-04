@@ -34,6 +34,7 @@ function Bugout(identifier, opts) {
   if (opts.iceServers) {
     trackeropts.rtcConfig = {iceServers: opts.iceServers};
   }
+  this.announce = opts.announce || ["wss://hub.bugout.network", " wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
   this.wt = opts.wt || new WebTorrent({tracker: trackeropts});
   this.nacl = nacl;
   
@@ -71,7 +72,7 @@ function Bugout(identifier, opts) {
     var blob = new Buffer.from(this.identifier);
     blob.name = this.identifier;
   }
-  var torrent = this.wt.seed(blob, {"name": this.identifier}, partial(function(bugout, torrent) {
+  var torrent = this.wt.seed(blob, {"name": this.identifier, "announce": this.announce}, partial(function(bugout, torrent) {
     debug("torrent", bugout.identifier, torrent);
     bugout.emit("torrent", bugout.identifier, torrent);
     if (torrent.discovery.tracker) {
