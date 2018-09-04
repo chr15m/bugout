@@ -29,7 +29,12 @@ function Bugout(identifier, opts) {
   var opts = opts || {};
   if (!(this instanceof Bugout)) return new Bugout(identifier, opts);
   
-  this.wt = opts.wt || new WebTorrent(opts.iceServers ? {tracker: {rtcConfig: {iceServers: opts.iceServers}}} : null);
+  var trackeropts = opts.tracker || {};
+  trackeropts.getAnnounceOpts = trackeropts.getAnnounceOpts || function() { return {numwant: 4}; };
+  if (opts.iceServers) {
+    trackeropts.rtcConfig = {iceServers: opts.iceServers};
+  }
+  this.wt = opts.wt || new WebTorrent({tracker: trackeropts});
   this.nacl = nacl;
   
   if (opts["seed"]) {
