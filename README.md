@@ -26,7 +26,7 @@ Try the [demo](https://chr15m.github.io/bugout), leave a message on the [message
 Using npm:
 
 ```shell
-npm i chr15m/bugout
+npm i bugout
 ```
 
 Script tag:
