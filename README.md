@@ -1,11 +1,10 @@
 <p align="center"><img src="docs/bugout-logo.svg"/></p>
 
-Web service bug-out bag. **[Live demo](https://chr15m.github.io/bugout)**
+Web service bug-out bag. **[Live demo](https://chr15m.github.io/bugout)**. **[Messageboard demo](https://chr15m.github.io/bugout/examples/messageboard.html)**.
 
  * Write servers that run in a browser tab.
  * Host backend services without a VPS, domain or SSL cert.
- * Anyone can deploy your server by simply opening a browser tab.
- * Stacks can be "self-hosted" by leaving a browser tab open on a PC.
+ * Easy to deploy & "self-hosted" servers by leaving a browser tab open.
  * Client-server over WebRTC instead of HTTPS.
 
 ### The old way:
