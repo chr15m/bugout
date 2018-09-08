@@ -32,17 +32,20 @@
   document.getElementById("address").textContent = b.address();
   // update the client link to use it
   document.getElementById("client").href += "#" + b.address();
+  console.log(document.getElementById("client").href);
   // log events as they happen
   function log(prefix) {
     return function(address) {
       var args = Array.prototype.slice.call(arguments, typeof(address) == "string" ? 1 : 0);
-      document.getElementById("log").textContent += "+" +
+      var line = "+" +
         Math.round((new Date()).getTime() / 1000) + " " +
         prefix + " " +
         (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
         args.map(function(a) {
           return (a ? a.toString() : "");
         }).join(" ") + "\n";
+      document.getElementById("log").textContent += line;
+      console.log(line);
     }
   }
   log("log started")();
@@ -52,7 +55,7 @@
   b.on("rpc", log("rpc:"));
   b.on("message", log("msg:"));
   b.on("connections", function(c) {
-    console.log("connections", c);
+    console.log("connections: " + c);
     document.getElementById("connections").textContent = c ? c + " wires connected" : "accepting connections";
   });
 
