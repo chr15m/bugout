@@ -133,6 +133,10 @@ var b = new Bugout("some shared swarm identifier");
  * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`
  * `announce` - use custom announce trackers to introduce peers e.g. `["wss://tracker...", ...]`. Only peers using the same trackers will find eachother.
 
+### Headless browser server
+
+[Bugout launcher](https://github.com/chr15m/bugout-launcher) is a nodejs based helper script to launch and run your Bugout servers from the command line using a headless browser.
+
 ### Nodejs
 
 Check out [the nodejs demo](./docs/examples/node/) for an example of running a Bugout service under Node. Note that the `wrtc` library is not that stable at the time of writing and running Bugout in headless Chrome or Firefox seems to work better.
