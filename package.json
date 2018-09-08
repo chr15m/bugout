@@ -1,6 +1,6 @@
 {
   "name": "bugout",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Backend web services over WebRTC.",
   "main": "index.js",
   "author": "Chris McCormick <chris@mccormick.cx>",
