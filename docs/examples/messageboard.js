@@ -11,7 +11,7 @@ if (typeof(messages) != "object" || !messages["length"]) {
 // function to display the raw message data here
 var msglist = document.getElementById("messages");
 function updateMessagelist(messages) {
-  msglist.innerHTML = JSON.stringify(messages.slice().reverse(), null, 2);
+  msglist.textContent = JSON.stringify(messages.slice().reverse(), null, 2);
 }
 updateMessagelist(messages);
 

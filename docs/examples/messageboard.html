@@ -24,7 +24,7 @@ var serveraddress = window.location.hash.substr(1) || "bUH7ukDvd9R2xLLRKMKWZ1mGP
 var b = new Bugout(serveraddress);
 
 var msglist = document.getElementById("messages");
-msglist.innerHTML = "Connecting to " + serveraddress + "...\n(Can take a minute or two)";
+msglist.textContent = "Connecting to " + serveraddress + "...\n(Can take a minute or two)";
 
 // events
 
@@ -32,7 +32,7 @@ msglist.innerHTML = "Connecting to " + serveraddress + "...\n(Can take a minute 
 document.getElementById("send").onclick = function(ev) {
   var m = document.getElementById("message");
   if (m.value) {
-    msglist.innerHTML = "Sending message...";
+    msglist.textContent = "Sending message...";
     b.rpc("post", m.value, function () {
       // refreshMessages();
       // server will send refresh message if messages are changed
@@ -61,13 +61,13 @@ function updateWires(count) {
   if (count) {
     document.getElementById("ui").style.display = "block";
   }
-  document.getElementById("connected").innerHTML = count ? "yes (" + count + ")" : "no";
+  document.getElementById("connected").textContent = count ? "yes (" + count + ")" : "no";
 }
 
 // utility functions
 
 function refreshMessages() {
-  msglist.innerHTML = "Refreshing messages...";
+  msglist.textContent = "Refreshing messages...";
   // get a list of the messages
   b.rpc("list", null, function(messages) {
     updateMessagelist(messages);
@@ -75,7 +75,7 @@ function refreshMessages() {
 }
 
 function updateMessagelist(messages) {
-  msglist.innerHTML =
+  msglist.textContent =
     messages.map(function (m) {
       return (new Date(m.t)).toString() + "\n" +
       "From: " + m.address + "\n" +

@@ -65,7 +65,7 @@ function log(prefix) {
       args.map(function(a) {
         return (a ? JSON.stringify(a) : "");
       }).join(" ") + "\n";
-    document.getElementById("log").innerHTML += msg;
+    document.getElementById("log").textContent += msg;
     console.log(msg);
   }
 }
@@ -76,7 +76,7 @@ var user = document.getElementById("user");
 // update the address if one was passed in
 var address = window.location.hash.substr(1);
 if (address) {
-  source.innerHTML = source.innerHTML.replace("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1", address);
+  source.textContent = source.innerHTML.replace("7Z3mcHq86AS7znzudowr8DhheFKuSL6VpZALmRARCej1", address);
   var instructions = document.getElementsByClassName("instructions");
   for (var i=0; i<instructions.length; i++) {
     instructions[i].style.display = "none";

@@ -29,14 +29,14 @@
   // save the seed for next time
   localStorage["bugout-messageboard-seed"] = b.seed;
   // display this server's address
-  document.getElementById("address").innerHTML = b.address();
+  document.getElementById("address").textContent = b.address();
   // update the client link to use it
   document.getElementById("client").href += "#" + b.address();
   // log events as they happen
   function log(prefix) {
     return function(address) {
       var args = Array.prototype.slice.call(arguments, typeof(address) == "string" ? 1 : 0);
-      document.getElementById("log").innerHTML += "+" +
+      document.getElementById("log").textContent += "+" +
         Math.round((new Date()).getTime() / 1000) + " " +
         prefix + " " +
         (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
@@ -53,7 +53,7 @@
   b.on("message", log("msg:"));
   b.on("connections", function(c) {
     console.log("connections", c);
-    document.getElementById("connections").innerHTML = c ? c + " wires connected" : "accepting connections";
+    document.getElementById("connections").textContent = c ? c + " wires connected" : "accepting connections";
   });
 
   // reference to the API code textarea
@@ -66,7 +66,7 @@
   }
   // check for locally saved API or load from bundled api.js
   var savedapi = localStorage["bugout-messageboard-api"];
-  if (savedapi) {
+  if (savedapi && document.location.href.indexOf("?reload") == -1) {
     api.value = savedapi;
     reload();
   } else {
