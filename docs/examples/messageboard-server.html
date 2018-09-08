@@ -43,8 +43,8 @@
         (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
         args.map(function(a) {
           return (a ? a.toString() : "");
-        }).join(" ") + "\n";
-      document.getElementById("log").textContent += line;
+        }).join(" ");
+      document.getElementById("log").textContent += line + "\n";
       console.log(line);
     }
   }

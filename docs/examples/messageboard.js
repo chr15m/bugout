@@ -18,11 +18,9 @@ updateMessagelist(messages);
 b.register("post", function(address, message, cb) {
   if (typeof(message) == "string" && message.length < 280) {
     messages.push({address: address, m: message, t: (new Date()).getTime()});
-    console.log("messages pre", messages);
     messages = messages.slice(Math.max(0, messages.length - 10));
     localStorage["bugout-messageboard"] = JSON.stringify(messages);
     updateMessagelist(messages);
-    console.log("messages post", messages);
     cb(true);
     b.send("refresh");
   } else {
