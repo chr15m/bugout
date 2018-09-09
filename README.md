@@ -19,7 +19,9 @@ Web service bug-out bag. **[Live demo](https://chr15m.github.io/bugout)**. **[Me
 
 This is a functional prototype. It's pre-alpha quality software. Be careful.
 
-Try the [demo](https://chr15m.github.io/bugout), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html).
+Try the [demo client](https://chr15m.github.io/bugout), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html), or [start with the server boilerplate](https://github.com/chr15m/bugout/blob/master/docs/server-boilerplate.html).
+
+[Install](#install) | [Use](#use) | [Server boilerplate](#boilerplate) | [Options](#options) | [Headless servers](#headless-browser-server) | [Debugging](#turn-on-debug-logging)
 
 ## Install
 
@@ -124,6 +126,10 @@ Note that you can connect to a generic peer-to-peer swarm without a server by si
 ```javascript
 var b = new Bugout("some shared swarm identifier");
 ```
+
+### Boilerplate
+
+The [quick-start boilerplate server in a single HTML file](https://github.com/chr15m/bugout/blob/master/docs/server-boilerplate.html) will quickly get you up and running with your own Bugout server.
 
 ### Options
 
