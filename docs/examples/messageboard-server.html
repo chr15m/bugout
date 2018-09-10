@@ -3,138 +3,127 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1" name="viewport">
-  <meta content="yes" name="mobile-web-app-capable">
-  <meta content="black" name="apple-mobile-web-app-status-bar-style">
-  <title>Bugout messageboard example: server</title>
+  <title>Bugout messageboard server</title>
   <script src="../bugout.min.js" type="application/javascript"></script>
+  <script src="//cdn.jsdelivr.net/npm/qrcode@latest/build/qrcode.min.js"></script>
 </head>
-<body>
-<img src="../bugout-logo.svg"/>
-<p>Messageboard demo server.</p>
-<h3 id="address"></h3>
-<div id="connections">establishing...</div>
-<p><a href="messageboard.html" target="_NEW" id="client">Open the client</a> to connect back here.</p>
-<h3>Messages received:</h3>
-<pre id="messages"></pre>
-<p>Code this server is running:</p>
-<textarea id="api" rows="20"></textarea>
-<button id="reload">reload</button>
-<pre id="log"></pre>
-</body>
+<body><pre id="log"></pre></body>
 <script>
-  // recall previously saved keypair seed
-  var seed = localStorage["bugout-messageboard-seed"];
+  log("*BUGOUT*");
+  log("\nmessageboard server\n");
+  log("(view source to see the server code)\n");
+
   // instantiate our bugout instance
-  var b = new Bugout({seed: seed});
+  var b = new Bugout({seed: localStorage["bugout-messageboard-seed"]});
   // save the seed for next time
   localStorage["bugout-messageboard-seed"] = b.seed;
-  // display this server's address
-  document.getElementById("address").textContent = b.address();
-  // update the client link to use it
-  document.getElementById("client").href += "#" + b.address();
-  console.log(document.getElementById("client").href);
-  // log events as they happen
-  function log(prefix) {
-    return function(address) {
-      var args = Array.prototype.slice.call(arguments, typeof(address) == "string" ? 1 : 0);
-      var line = "+" +
-        Math.round((new Date()).getTime() / 1000) + " " +
-        prefix + " " +
-        (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
-        args.map(function(a) {
-          return (a ? a.toString() : "");
-        }).join(" ");
-      document.getElementById("log").textContent += line + "\n";
-      console.log(line);
-    }
+
+  // log this server's address
+  log("address:", b.address());
+  log("announcing...");
+
+  // load messages from previous run
+  if (localStorage["bugout-messageboard"]) {
+    messages = JSON.parse(localStorage["bugout-messageboard"]);
   }
-  log("log started")();
-  b.on("wire", log("wire connect:"));
-  b.on("left", log("wire close:"));
-  b.on("seen", log("saw:"));
-  b.on("rpc", log("rpc:"));
-  b.on("message", log("msg:"));
-  b.on("connections", function(c) {
-    console.log("connections: " + c);
-    document.getElementById("connections").textContent = c ? c + " wires connected" : "accepting connections";
+  if (typeof(messages) != "object" || !messages["length"]) {
+    messages = [];
+  }
+
+  /*** rpc calls ***/
+
+  // simple "ping" rpc call
+  b.register("ping", function(address, args, cb) {
+    args["pong"] = Math.random();
+    cb(args);
   });
 
-  // reference to the API code textarea
-  var api = document.getElementById("api");
-  // function to reload the API from the textarea
-  function reload() {
-    b.api = {};
-    eval(api.value);
-    localStorage["bugout-messageboard-api"] = api.value;
+  /*** messageboard server API ***/
+
+  b.register("post", function(address, message, cb) {
+    if (typeof(message) == "string" && message.length < 280) {
+      var m = {address: address, m: message, t: (new Date()).getTime()};
+      log("messageboard:", m);
+      messages.push(m);
+      messages = messages.slice(Math.max(0, messages.length - 10));
+      localStorage["bugout-messageboard"] = JSON.stringify(messages);
+      cb(true);
+      b.send("refresh");
+    } else {
+      cb(false);
+    }
+  }, "Post a message to the board");
+
+  b.register("list", function(address, args, cb) {
+    cb(messages.slice().reverse());
+  }, "List most recent messages");
+
+  /*** logging ***/
+
+  // log when network connectivity changes
+  var connected = false;
+  b.on("connections", function(c) {
+    if (c == 0 && connected == false) {
+      connected = true;
+      log("ready");
+      // link to the messageboard client URL
+      var clientURL = document.location.href.replace("-server", "") + "#" + b.address();
+      // qrcode for the client URL
+      log(qr(clientURL));
+      log("  " + clientURL + "\n");
+    }
+    log("connections:", c);
+  });
+
+  // log when a client sends a message
+  b.on("message", function(address, msg) { log("message:", address, msg); });
+
+  // log when a client makes an rpc call
+  b.on("rpc", function(address, call, args) { log("rpc:", address, call, args); });
+
+  // log when we see a new client address
+  b.on("seen", function(address) { log("seen:", address); });
+
+  // simple logging function
+  function log() {
+    var args = Array.prototype.slice.call(arguments);
+    console.log.apply(null, args);
+    args = args.map(function(a) { if (typeof(a) == "string") return a; else return JSON.stringify(a); });
+    document.getElementById("log").textContent += args.join(" ") + "\n";
   }
-  // check for locally saved API or load from bundled api.js
-  var savedapi = localStorage["bugout-messageboard-api"];
-  if (savedapi && document.location.href.indexOf("?reload") == -1) {
-    api.value = savedapi;
-    reload();
-  } else {
-    fetch("messageboard.js").then(function(js) {
-      js.text().then(function(data) {
-        api.value = data;
-        reload();
-      });
-    });
+
+  // generate a text based qr code
+
+  function qr(txt) {
+    var q = QRCode.create(txt);
+    var code = "\n\n";
+    for (var i=0; i<2; i++) {
+      code += "  ████";
+      for (var j=0; j<q.modules.size; j++) {
+        code += "██";
+      }
+      code += "████\n";
+    }
+    for (var i=0; i<q.modules.size; i++) {
+      code += "  ████";
+      for (var j=0; j<q.modules.size; j++) {
+        code += q.modules.data[i * q.modules.size + j] ? "  " : "██";
+      }
+      code += "████\n";
+    }
+    for (var i=0; i<2; i++) {
+      code += "  ████";
+      for (var j=0; j<q.modules.size; j++) {
+        code += "██";
+      }
+      code += "████\n";
+    }
+    return code + "\n\n";
   }
-  // when the user clicks the reload button
-  document.getElementById("reload").onclick = function() {
-    reload();
-  }
+
 </script>
 <style>
-  * { 
-    box-sizing: border-box;
-  }
-
-  body {
-    max-width: 800px;
-    font-family: Arial;
-    font-size: 1.25em;
-    text-align: center;
-    margin: auto;
-    width: 100%;
-    padding: 0.5em;
-  }
-
-  h3 {
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
-
-  textarea {
-    width: 100%;
-    padding: 0.5em;
-    border-radius: 3px;
-    border: 1px solid silver;
-  }
-
-  button {
-    border-radius: 5px;
-    background-color: #008C28;
-    color: white;
-    border: none;
-    padding: 0.25em 1em;
-    font-size: 1.25em;
-    float: right;
-    margin-top: 0.5em;
-  }
-
-  img {
-    max-width: 100%;
-  }
-
-  pre {
-    max-width: 100%;
-    max-width: 100%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-align: left;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
+  body { background-color: #333; }
+  pre { color: #eee; white-space: pre-wrap; word-wrap: break-word; line-height: 1em; }
 </style>
 </html>
