@@ -21,7 +21,7 @@ This is a functional prototype. It's pre-alpha quality software. Be careful.
 
 Try the [demo client](https://chr15m.github.io/bugout), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html), or [start with the server boilerplate](https://github.com/chr15m/bugout/blob/master/docs/server-boilerplate.html).
 
-[Install](#install) | [Use](#use) | [Server boilerplate](#boilerplate) | [Options](#options) | [Headless servers](#headless-browser-server) | [Debugging](#turn-on-debug-logging)
+[Install](#install) | [Use](#use) | [Server boilerplate](#boilerplate) | [Deploy headless](#deploy)
 
 ## Install
 
@@ -139,21 +139,25 @@ The [quick-start boilerplate server in a single HTML file](https://github.com/ch
  * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`
  * `announce` - use custom announce trackers to introduce peers e.g. `["wss://tracker...", ...]`. Only peers using the same trackers will find eachother.
 
-### Headless browser server
-
-[Bugout launcher](https://github.com/chr15m/bugout-launcher) is a nodejs based helper script to launch and run your Bugout servers from the command line using a headless browser.
-
-### Nodejs
-
-Check out [the nodejs demo](./docs/examples/node/) for an example of running a Bugout service under Node. Note that the `wrtc` library is not that stable at the time of writing and running Bugout in headless Chrome or Firefox seems to work better.
-
 ### Turn on debug logging
 
 ```javascript
 localStorage.debug = "bugout";
 ```
 
-### The FAMGA virus
+## Deploy
+
+Bugout servers can deployed and run inside of browser tabs on long running PCs but you can also deploy them "headless" more like traditional servers. There are a couple of ways of doing that as follows:
+
+### Headless browser server
+
+[Bugout launcher](https://github.com/chr15m/bugout-launcher) is a nodejs based helper script to launch and run your Bugout servers from the command line using a headless browser instance.
+
+### Nodejs
+
+Check out [the nodejs demo](./docs/examples/node/) for an example of running a Bugout service under Node. Note that the `wrtc` library is not that stable at the time of writing and running Bugout in headless Chrome or Firefox seems to work better. Bugout servers running inside nodejs obviously won't have access to browser facilities like localStorage.
+
+## The FAMGA virus
 
 > Infected with the [FAMGA](https://duckduckgo.com/?q=FAMGA) virus everybody's eating brains. Time to grab yr bugout box & hit the forest.
 
