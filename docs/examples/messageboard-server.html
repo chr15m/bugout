@@ -69,8 +69,13 @@
       // link to the messageboard client URL
       var clientURL = document.location.href.replace("-server", "") + "#" + b.address();
       // qrcode for the client URL
-      log(qr(clientURL));
-      log("  " + clientURL + "\n");
+      if (window.innerWidth > 600) {
+        log(qr(clientURL));
+      } else {
+        log();
+      }
+      log(clientURL + "\n");
+      log("Connect back to this server-in-a-tab using the link above.");
     }
     log("connections:", c);
   });

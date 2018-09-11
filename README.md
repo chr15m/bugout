@@ -17,11 +17,16 @@ Web service bug-out bag. **[Live demo](https://chr15m.github.io/bugout)**. **[Me
 
 [Bugout is a humble attempt to re-decentralize the web a little](https://chr15m.github.io/on-self-hosting-and-decentralized-software.html).
 
-This is a functional prototype. It's pre-alpha quality software. Be careful.
+This is a functional prototype. It's pre-alpha quality software. It will allow people to connect directly to your browser from outside your network. Be careful.
 
-Try the [demo client](https://chr15m.github.io/bugout), leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html), or [run you own server-in-a-tab](https://chr15m.github.io/bugout/server.html), or [start with the server boilerplate](https://github.com/chr15m/bugout/blob/master/docs/server-boilerplate.html).
+[Demos](#demos) | [Install](#install) | [Use](#use) | [Server boilerplate](#boilerplate) | [Deploy headless](#deploy)
 
-[Install](#install) | [Use](#use) | [Server boilerplate](#boilerplate) | [Deploy headless](#deploy)
+## Demos
+
+ * [Demo client](https://chr15m.github.io/bugout) (good for testing your server API).
+ * [Demo server](https://chr15m.github.io/bugout/server.html).
+ * Leave a message on the [message board demo](https://chr15m.github.io/bugout/examples/messageboard.html).
+ * [Boilerplate single-page server code](https://github.com/chr15m/bugout/blob/master/docs/server-boilerplate.html).
 
 ## Install
 

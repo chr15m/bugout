@@ -3,83 +3,104 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1" name="viewport">
-  <meta content="yes" name="mobile-web-app-capable">
-  <meta content="black" name="apple-mobile-web-app-status-bar-style">
-  <title>Bugout test page</title>
-  <link href="style.css" rel="stylesheet">
+  <title>Bugout demo server</title>
   <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/codemirror.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/mode/javascript/javascript.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/addon/edit/matchbrackets.min.js"></script>
   <link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.39.2/codemirror.min.css" rel="stylesheet">
   <script src="//cdn.rawgit.com/papnkukn/qrcode-svg/master/dist/qrcode.min.js"></script>
   <script src="bugout.min.js" type="application/javascript"></script>
+  <script src="//cdn.jsdelivr.net/npm/qrcode@latest/build/qrcode.min.js"></script>
 </head>
 <body>
-<img src="bugout-logo.svg"/>
-<h3>Demo server</h3>
-<p>This browser tab is running a Bugout server with this address:</p>
-<h3 id="address"></h3>
-<div id="qr"></div>
-<div id="connections">establishing...</div>
-<p><a href="index.html" target="_NEW" id="client">Connect back to this server-in-a-tab</a> from this or another device.</p>
-<p>You can also edit the code this server is running below to change the live API:</p>
 <textarea id="api" rows="20"></textarea>
 <button id="reload">reload</button>
 <pre id="log"></pre>
 </body>
 <script>
-  // recall previously saved keypair seed
-  var seed = localStorage["bugout-demo-seed"];
+  log("*BUGOUT*\n");
+  log("Server log started.\n");
 
   // instantiate our bugout instance
-  var b = new Bugout({seed: seed});
+  var b = new Bugout({seed: localStorage["bugout-demo-server-seed"]});
 
   // save the seed for next time
-  localStorage["bugout-demo-seed"] = b.seed;
+  localStorage["bugout-demo-server-seed"] = b.seed;
 
-  // display this server's address
-  document.getElementById("address").textContent = b.address();
+  // log this server's address
+  log("\nThis browser tab is running a Bugout server.");
+  log("This server's address:", b.address());
+  log("announcing...");
 
-  // figure out the URL for this server
-  var URL = document.location.href.split("#")[0].replace("server.html", "") + "#" + b.address();
+  /*** logging ***/
 
-  // update the client link to use it
-  document.getElementById("client").href = URL;
-
-  // update the QR code link
-  var qrcode = new QRCode(URL).svg();
-  document.getElementById("qr").innerHTML = qrcode;
-
-  // function to add to the log
-  function log(prefix) {
-    return function(address) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      var logger = Function.prototype.bind.call(console.log, console);
-      logger.apply(console, ["logger", prefix].concat(Array.prototype.slice.call(arguments)));
-      document.getElementById("log").textContent += "+" +
-        Math.round((new Date()).getTime() / 1000) + " " +
-        prefix + " " +
-        (typeof(address) == "string" ? address.substr(0, 8) + ".. " : "") +
-        args.map(function(a) {
-          return (a ? a.toString() : "");
-        }).join(" ") + "\n";
-    }
-  }
-  log("log started")();
-  b.on("seen", log("saw:"));
-  b.on("rpc", log("rpc:"));
-  b.on("message", log("msg:"));
-  
-  // connectivity
-  //b.on("torrent", log("torrent:"));
-  //b.on("announce", log("tracker announce:"));
-  //b.on("tracker", log("tracker update:"));
-  //b.on("wire", log("wire:"));
-
+  // log when network connectivity changes
+  var connected = false;
   b.on("connections", function(c) {
-    console.log("connections", c);
-    document.getElementById("connections").textContent = c ? c + " wires connected" : "accepting connections";
+    if (c == 0 && connected == false) {
+      connected = true;
+      log("ready");
+      // link to the messageboard client URL
+      var clientURL = document.location.href.replace("server.html", "") + "#" + b.address();
+      // qrcode for the client URL
+      if (window.innerWidth > 600) {
+        log(qr(clientURL));
+      } else {
+        log();
+      }
+      log(clientURL + "\n");
+      log("Connect back to this server-in-a-tab using the link above.");
+    }
+    log("connections:", c);
   });
+
+  // log when a client sends a message
+  b.on("message", function(address, msg) { log("message:", address, msg); });
+
+  // log when a client makes an rpc call
+  b.on("rpc", function(address, call, args) { log("rpc:", address, call, args); });
+
+  // log when we see a new client address
+  b.on("seen", function(address) { log("seen:", address); });
+
+  // simple logging function
+  function log() {
+    var args = Array.prototype.slice.call(arguments);
+    console.log.apply(null, args);
+    args = args.map(function(a) { if (typeof(a) == "string") return a; else return JSON.stringify(a); });
+    document.getElementById("log").textContent += args.join(" ") + "\n";
+  }
+
+  // generate a text based qr code
+
+  function qr(txt) {
+    var q = QRCode.create(txt);
+    var code = "\n\n";
+    for (var i=0; i<2; i++) {
+      code += "  ████";
+      for (var j=0; j<q.modules.size; j++) {
+        code += "██";
+      }
+      code += "████\n";
+    }
+    for (var i=0; i<q.modules.size; i++) {
+      code += "  ████";
+      for (var j=0; j<q.modules.size; j++) {
+        code += q.modules.data[i * q.modules.size + j] ? "  " : "██";
+      }
+      code += "████\n";
+    }
+    for (var i=0; i<2; i++) {
+      code += "  ████";
+      for (var j=0; j<q.modules.size; j++) {
+        code += "██";
+      }
+      code += "████\n";
+    }
+    return code + "\n\n";
+  }
+
+  /*** API editing ***/
 
   // reference to the API code textarea
   var api = document.getElementById("api");
@@ -89,6 +110,7 @@
     lineNumbers: true,
     matchBrackets: true,
     continueComments: "Enter",
+    viewportMargin: Infinity,
     extraKeys: {"Ctrl-Q": "toggleComment"}
   });
 
@@ -103,21 +125,33 @@
     localStorage["bugout-demo-api"] = api.value;
   }
 
-  // check for locally saved API or load from bundled api.js
-  var savedapi = localStorage["bugout-demo-api"];
-  if (savedapi && document.location.href.indexOf("?reload") == -1) {
-    reload(savedapi);
-  } else {
-    fetch("api.js").then(function(js) {
-      js.text().then(function(data) {
-        reload(data);
-      });
-    });
-  }
-
   // when the user clicks the reload button
   document.getElementById("reload").onclick = function() {
     reload();
   }
 </script>
+<script id="api-source">// Bugout demo server API code
+// Edit this to change the live API this server is running:
+
+// respond to ping calls by sending back "pong"
+b.register("ping", function(pk, args, cb) {
+  args["pong"] = true;
+  cb(args);
+}, "Respond to ping with 'pong'.");
+</script>
+<script>reload(document.getElementById("api-source").innerHTML);</script>
+<style>
+  body { background-color: #333; margin: 0px }
+  pre { color: #eee; white-space: pre-wrap; word-wrap: break-word; line-height: 1em; margin: 1em; }
+  .CodeMirror { height: auto; }
+  #reload {
+    border-radius: 5px;
+    background-color: #008C28;
+    color: white;
+    border: none;
+    padding: 0.25em 1em;
+    font-size: 1.25em;
+    margin: 0.5em;
+  }
+</style>
 </html>
