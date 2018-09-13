@@ -261,11 +261,19 @@ function onMessage(bugout, identifier, wire, message) {
           if (bugout.callbacks[nonce]) {
             var responsestring = packet.rr.toString();
             try {
-              bugout.callbacks[nonce](JSON.parse(responsestring));
+              var responsestringstruct = JSON.parse(responsestring);
             } catch(e) {
               debug("Malformed response JSON: " + responsestring);
+              var responsestringstruct = null;
             }
-            delete bugout.callbacks[nonce];
+            if (bugout.callbacks[nonce] && responsestringstruct) {
+              debug("rpc-response", bugout.address(pk), nonce, responsestringstruct);
+              bugout.emit("rpc-response", bugout.address(pk), nonce, responsestringstruct);
+              bugout.callbacks[nonce](responsestringstruct);
+              delete bugout.callbacks[nonce];
+            } else {
+              debug("RPC response nonce not known:", nonce);
+            }
           } else {
             debug("dropped response with no callback.", nonce);
           }

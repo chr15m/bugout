@@ -120,6 +120,7 @@ test("RPC and message passing", function(t) {
 
 // TODO: 3 party incomplete wire graph gossip & message recipientn tests
 // TODO: test RPC with each type of argument
+// TODO: test RPC with unknown nonce
 // TODO: more bad parameters & calls
 // TODO: check mutated keys yield cryptographic errors
 // TODO: test malformed JSON packets
