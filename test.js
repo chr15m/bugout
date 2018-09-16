@@ -4,10 +4,12 @@ var Bugout = require("./index.js");
 
 var wtest = new WebTorrent({dht: false, tracker: false});
 var wtest2 = new WebTorrent({dht: false, tracker: false});
+var wtest3 = new WebTorrent({dht: false, tracker: false});
 
 test.onFinish(function() {
   wtest.destroy();
   wtest2.destroy();
+  wtest3.destroy();
 });
 
 test('Instantiation', function (t) {
@@ -118,9 +120,64 @@ test("RPC and message passing", function(t) {
   });
 });
 
-// TODO: 3 party incomplete wire graph gossip & message recipientn tests
-// TODO: test RPC with each type of argument
-// TODO: test RPC with unknown nonce
+test("3 party incomplete graph gossip test", function(t) {
+  t.plan(10);
+  
+  var bs = new Bugout({wt: wtest});
+  var bc1 = new Bugout(bs.address(), {wt: wtest2});
+  var bc2 = new Bugout(bs.address(), {wt: wtest3});
+
+  var msg = {"Foo": "bar", "meaning": 42};
+
+  bs.register("ping", function(address, args, cb) {
+    t.equal(address, bc2.address(), "client rpc address");
+    args["pong"] = true;
+    cb(args);
+  });
+
+  bs.on("rpc", function(address, call, args) {
+    // check rpc was from client2
+    t.equal(bc2.address(), address, "server check client2 was rpc sender");
+  });
+
+  bc1.on("rpc", console.log.bind(null, "client1 rpc"));
+
+  bc2.on("server", function(address) {
+    t.equal(address, bs.address(), "client2 seen server address");
+    // verify we're only acutally connected to other client
+    // (getting messages by gossip)
+    t.equal(bc2.torrent.wires.length, 1, "client2 only one wire");
+    t.equal(bc2.address(bc2.torrent.wires[0].peerExtendedHandshake.pk.toString()), bc1.address(), "client2 is connected to client1");
+    bc2.rpc("ping", msg, function(response) {
+      t.equal(response.Foo, "bar", "RPC server response check value 1");
+      t.equal(response.meaning, 42, "RPC server response check value 2");
+      t.ok(response.pong, "RPC server response check pong");
+    });
+  });
+
+  // connect first client to server
+  bs.torrent.on("infoHash", function() {
+    bs.torrent.addPeer("127.0.0.1:" + bc1.wt.address().port);
+
+    bs.once("seen", function(address) {
+      t.equal(address, bc1.address(), "server seen client1 address");
+      // bs.send(address, msg);
+      // check the second client's connection
+      bs.once("seen", function(address) {
+        t.equal(address, bc2.address(), "server seen client2 address");
+      });
+      // connect second client to first
+      setTimeout(function() {
+        bc1.torrent.addPeer("127.0.0.1:" + bc2.wt.address().port);
+      }, 100);
+    });
+
+  });
+});
+
+// TODO: test RPC with each type of argument combination
+// TODO: test bad RPC with unknown nonce
 // TODO: more bad parameters & calls
 // TODO: check mutated keys yield cryptographic errors
 // TODO: test malformed JSON packets
+
