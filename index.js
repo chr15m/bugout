@@ -63,6 +63,7 @@ function Bugout(identifier, opts) {
   this.serveraddress = null;
   this.heartbeattimer = null;
   
+  debug("address", this.address());
   debug("identifier", this.identifier);
   debug("public key", this.pk);
   debug("encryption key", this.ek);
