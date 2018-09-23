@@ -54,11 +54,11 @@ test("Connectivity events", function(t) {
   bs.connections();
   bs.connections();
 
-  bc.on("wire", function(c) {
+  bc.on("wireseen", function(c) {
     t.equal(c, 1, "client wire count");
   });
 
-  bs.on("wire", function(c) {
+  bs.on("wireseen", function(c) {
     t.equal(c, 1, "server wire count");
   });
 
@@ -140,6 +140,7 @@ test("3 party incomplete graph gossip test", function(t) {
     t.equal(bc2.address(), address, "server check client2 was rpc sender");
   });
 
+  // this should never fire
   bc1.on("rpc", console.log.bind(null, "client1 rpc"));
 
   bc2.on("server", function(address) {
@@ -172,6 +173,135 @@ test("3 party incomplete graph gossip test", function(t) {
       }, 100);
     });
 
+  });
+});
+
+test("heartbeat seen and timeout", function(t) {
+  t.plan(20);
+
+  var interval = 100;
+  var timeout = 1000;
+  var bs = new Bugout({wt: wtest, heartbeat: interval, timeout: timeout});
+  var bc1 = new Bugout(bs.address(), {wt: wtest2, heartbeat: interval, timeout: timeout});
+  var bc2 = new Bugout(bs.address(), {wt: wtest3, heartbeat: interval, timeout: timeout});
+
+  /*console.log(" ->>> bs:", bs.address());
+  console.log(" ->>> bc1:", bc1.address());
+  console.log(" ->>> bc2:", bc2.address());*/
+
+  /*bs.on("timeout", console.log.bind(null, "-> bs timeout"));
+  bc2.on("timeout", console.log.bind(null, "-> bc2 timeout"));
+  bs.on("left", console.log.bind(null, "-> bs left"));
+  bc2.on("left", console.log.bind(null, "-> bc2 left"));
+  bs.on("ping", console.log.bind(null, "bs ping"));
+  bc1.on("ping", console.log.bind(null, "bc1 ping"));
+  bc2.on("ping", console.log.bind(null, "bc2 ping"));*/
+
+  var pingers = [
+    [bc2.address(), bc1.address(), bs],
+    [bs.address(), bc2.address(), bc1],
+    [bs.address(), bc1.address(), bc2],
+  ];
+
+  // ensure each client receives at least one ping from each other client
+  pingers.map(function(pingtest) {
+    var src = pingtest.pop();
+    var expected = {};
+    for (var p=0; p<pingtest.length; p++) {
+      expected[pingtest[p]] = true;
+    }
+    src.on("ping", function(address) {
+      if (expected[address]) {
+        t.pass("ping from " + address);
+        delete expected[address];
+      }
+    });
+  });
+
+  // ensure server sees client 2 timeout
+  bs.on("timeout", function(address) {
+    // ignore bc1 timeout
+    if (address == bc2.address()) {
+      t.pass("server saw client2 timeout");
+    }
+  });
+
+  // ensure client2 sees server timeout
+  bc2.on("timeout", function(address) {
+    // ignore bc1 timeout
+    if (address == bs.address()) {
+      t.pass("client2 saw server timeout");
+    }
+  });
+
+  var leavers = [
+    [bc2.address(), bc1.address(), bs],
+    [bs.address(), bc1.address(), bc2],
+  ];
+
+  // bs and bc2 should see the other two leave each once
+  leavers.map(function(leavetest) {
+    var src = leavetest.pop();
+    var expected = {};
+    for (var e=0; e<leavetest.length; e++) {
+      expected[leavetest[e]] = true;
+    }
+    src.on("left", function(address) {
+      if (expected[address]) {
+        t.pass(address + " left");
+        delete expected[address];
+      } else {
+        t.fail(address + " left unexpectedly");
+      }
+      // clean up once this test is done
+      if (Object.keys(expected).length == 0) {
+        src.destroy();
+      }
+    });
+  });
+
+  var msg = {"Goober": "dougal", "question": 42};
+
+  bc2.on("server", function(address) {
+    t.equal(address, bs.address(), "client2 seen server address");
+    // verify we're only acutally connected to other client
+    // (getting messages by gossip)
+    t.equal(bc2.torrent.wires.length, 1, "client2 only one wire");
+    t.equal(bc2.address(bc2.torrent.wires[0].peerExtendedHandshake.pk.toString()), bc1.address(), "client2 is connected to client1");
+
+    bs.on("wireleft", function() {
+      t.equal(bs.torrent.wires.length, 0, "server wires to zero");
+    });
+
+
+    bc2.on("wireleft", function() {
+      t.equal(bc2.torrent.wires.length, 0, "client2 wires to zero");
+    });
+
+    // disconnect bc2
+    setTimeout(function() {
+      bc1.destroy(function() {
+        t.pass("bc1 destroyed");
+      });
+    }, 500);
+  });
+
+  // connect first client to server
+  bs.torrent.on("infoHash", function() {
+    bs.torrent.addPeer("127.0.0.1:" + bc1.wt.address().port);
+
+    bs.once("seen", function(address) {
+      t.equal(address, bc1.address(), "server seen client1 address");
+      // bs.send(address, msg);
+      // check the second client's connection
+      bs.once("seen", function(address) {
+        t.equal(address, bc2.address(), "server seen client2 address");
+      });
+      // connect second client to first
+      setTimeout(function() {
+        bc1.torrent.addPeer("127.0.0.1:" + bc2.wt.address().port);
+      }, 100);
+    });
   });
 });
 
