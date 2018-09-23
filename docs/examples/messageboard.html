@@ -54,8 +54,8 @@ b.on("message", function(address, message) {
 });
 
 // if we see a wire join or leave
-b.on("wire", updateWires);
-b.on("left", updateWires);
+b.on("wireseen", updateWires);
+b.on("wireleft", updateWires);
 
 function updateWires(count) {
   if (count) {
