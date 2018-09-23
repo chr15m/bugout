@@ -193,7 +193,10 @@ function encryptPacket(bugout, pk, packet) {
 function sendRaw(bugout, message) {
   var wires = bugout.torrent.wires;
   for (var w=0; w<wires.length; w++) {
-    wires[w].extended(EXT, message);
+    var extendedhandshake = wires[w]["peerExtendedHandshake"];
+    if (extendedhandshake && extendedhandshake.m && extendedhandshake.m[EXT]) {
+      wires[w].extended(EXT, message);
+    }
   }
   var hash = toHex(nacl.hash(message).slice(16));
   debug("sent", hash, "to", wires.length, "wires");
