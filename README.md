@@ -19,7 +19,7 @@ Web service bug-out bag. **[Live demo](https://chr15m.github.io/bugout)**. **[Me
 
 This is a functional prototype. It's pre-alpha quality software. It will allow people to connect directly to your browser from outside your network. Be careful.
 
-[Demos](#demos) | [Install](#install) | [Use](#use) | [Server boilerplate](#boilerplate) | [Deploy headless](#deploy)
+[Demos](#demos) | [Install](#install) | [Use](#use) | [API documentation](./docs/API.md) | [Server boilerplate](#boilerplate) | [Deploy headless](#deploy)
 
 ## Demos
 
