@@ -56,6 +56,10 @@ Clojurescript:
 
 ## Use
 
+```javascript
+var Bugout = require("bugout");
+```
+
 To create a Bugout server that runs in a browser tab:
 
 ```javascript
