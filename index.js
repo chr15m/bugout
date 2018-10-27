@@ -34,7 +34,7 @@ function Bugout(identifier, opts) {
   if (opts.iceServers) {
     trackeropts.rtcConfig = {iceServers: opts.iceServers};
   }
-  this.announce = opts.announce || ["wss://hub.bugout.network", "wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
+  this.announce = opts.announce || ["wss://hub.bugout.link", "wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
   this.wt = opts.wt || new WebTorrent({tracker: trackeropts});
   this.nacl = nacl;
   
