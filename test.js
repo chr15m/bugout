@@ -13,7 +13,7 @@ test.onFinish(function() {
 });
 
 test('Instantiation', function (t) {
-  t.plan(6);
+  t.plan(8);
 
   var b1 = new Bugout({seed: "BohNtZ24TrgMwZTLx9VDKtcZARNVuCt5tnecAAxYtTBC8pC61uGN", wt: wtest});
   t.equal(b1.identifier, "bYSkTy24xXJj6dWe79ZAQXKJZrn2n983SQ", "server identifier");
@@ -25,11 +25,19 @@ test('Instantiation', function (t) {
   t.throws(function() {
     var b2 = new Bugout({seed: "BohNtZ24TrgMwZTLx9VDLtcZARNVuCt5tnecAAxYtTBC8pC61uGN", wt: wtest});
   }, "Error: Invalid checksum", "invalid seed checksum");
-  
+
   var b3 = new Bugout("bMuHpwCxcD5vhC5u7VKuajYu5RU7FUnaGJ", {wt: wtest});
   t.equal(b3.identifier, "bMuHpwCxcD5vhC5u7VKuajYu5RU7FUnaGJ", "client identifier");
   b3.torrent.on("infoHash", function() {
     t.equal(b3.torrent.infoHash, "d96fe55834a62d86e48573c132345c01a38f5ffd", "client infoHash");
+  });
+
+  var b4 = new Bugout({seed: Bugout.encodeseed(Array(32).fill(0x23)), wt: wtest});
+  console.log(b4.address());
+  t.equal(b4.identifier, "bYwqSagZb5n42M9qXSw2uu3Cpxg9JhZcnd", "encode seed client identifier");
+  b4.torrent.on("infoHash", function() {
+    console.log(b4.torrent.infoHash);
+    t.equal(b4.torrent.infoHash, "5486696a87e91c6c7fcfc6279c9b08709c7aa61f", "client infoHash");
   });
 });
 

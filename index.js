@@ -41,7 +41,7 @@ function Bugout(identifier, opts) {
   if (opts["seed"]) {
     this.seed = opts["seed"];
   } else {
-    this.seed = bs58chk.encode(Buffer.from(nacl.randomBytes(32)), SEEDPREFIX);
+    this.seed = this.encodeseed(nacl.randomBytes(32));
   }
 
   this.timeout = opts["timeout"] || PEERTIMEOUT;
@@ -94,6 +94,10 @@ function Bugout(identifier, opts) {
 }
 
 Bugout.prototype.WebTorrent = WebTorrent;
+
+Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
+  return bs58chk.encode(Buffer.from(material), SEEDPREFIX);
+}
 
 // start a heartbeat and expire old "seen" peers who don't send us a heartbeat
 Bugout.prototype.heartbeat = function(interval) {
