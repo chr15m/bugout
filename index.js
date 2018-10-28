@@ -93,6 +93,8 @@ function Bugout(identifier, opts) {
   }
 }
 
+Bugout.prototype.WebTorrent = WebTorrent;
+
 // start a heartbeat and expire old "seen" peers who don't send us a heartbeat
 Bugout.prototype.heartbeat = function(interval) {
   var interval = interval || 30000;
