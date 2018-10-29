@@ -283,10 +283,14 @@ function onMessage(bugout, identifier, wire, message) {
         if (packet.y == "m") {
           debug("message", identifier, packet);
           var messagestring = packet.v.toString();
+          var messagejson = null;
           try {
-            bugout.emit("message", bugout.address(pk), JSON.parse(messagestring), packet);
+            var messagejson = JSON.parse(messagestring);
           } catch(e) {
             debug("Malformed message JSON: " + messagestring);
+          }
+          if (messagejson) {
+            bugout.emit("message", bugout.address(pk), messagejson, packet);
           }
         } else if (packet.y == "r") { // rpc call
           debug("rpc", identifier, packet);
