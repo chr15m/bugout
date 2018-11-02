@@ -49,8 +49,8 @@ function Bugout(identifier, opts) {
   // ephemeral encryption key only used for this session
   this.keyPairEncrypt = nacl.box.keyPair();
 
-  this.pk = bs58.encode(this.keyPair.publicKey);
-  this.ek = bs58.encode(this.keyPairEncrypt.publicKey);
+  this.pk = bs58.encode(Buffer.from(this.keyPair.publicKey));
+  this.ek = bs58.encode(Buffer.from(this.keyPairEncrypt.publicKey));
   
   this.identifier = identifier || this.address();
   this.peers = {}; // list of peers seen recently: address -> pk, ek, timestamp
@@ -224,7 +224,7 @@ function encryptPacket(bugout, pk, packet) {
     var nonce = nacl.randomBytes(nacl.box.nonceLength);
     packet = bencode.encode({
       "n": nonce,
-      "ek": bs58.encode(bugout.keyPairEncrypt.publicKey),
+      "ek": bs58.encode(Buffer.from(bugout.keyPairEncrypt.publicKey)),
       "e": nacl.box(packet, nonce, bs58.decode(bugout.peers[bugout.address(pk)].ek), bugout.keyPairEncrypt.secretKey),
     });
   } else {
