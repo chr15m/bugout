@@ -34,5 +34,15 @@
     "compile": "browserify -s Bugout index.js > bugout.js",
     "size": "npm run build && cat bugout.min.js | gzip | wc -c",
     "test": "node test.js"
-  }
+  },
+  "keywords": [
+    "crypto",
+    "bittorrent",
+    "webtorrent",
+    "networking",
+    "webrtc",
+    "decentralization",
+    "hash",
+    "Uint8Array"
+  ]
 }
