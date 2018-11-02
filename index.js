@@ -7,7 +7,7 @@ var nacl = require("tweetnacl");
 var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
 var bs58 = require("bs58");
-var bs58chk = require("base58check");
+var bs58check = require("bs58check");
 var ripemd160 = require("ripemd160");
 
 inherits(Bugout, EventEmitter);
@@ -45,7 +45,7 @@ function Bugout(identifier, opts) {
   }
 
   this.timeout = opts["timeout"] || PEERTIMEOUT;
-  this.keyPair = opts["keyPair"] || nacl.sign.keyPair.fromSeed(Uint8Array.from(bs58chk.decode(this.seed).data).slice(1));
+  this.keyPair = opts["keyPair"] || nacl.sign.keyPair.fromSeed(Uint8Array.from(bs58check.decode(this.seed)).slice(2));
   // ephemeral encryption key only used for this session
   this.keyPairEncrypt = nacl.box.keyPair();
 
@@ -96,7 +96,7 @@ function Bugout(identifier, opts) {
 Bugout.prototype.WebTorrent = WebTorrent;
 
 Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
-  return bs58chk.encode(Buffer.from(material), SEEDPREFIX);
+  return bs58check.encode(Buffer.concat([Buffer.from(SEEDPREFIX, "hex"), Buffer.from(material)]));
 }
 
 // start a heartbeat and expire old "seen" peers who don't send us a heartbeat
@@ -144,7 +144,7 @@ Bugout.prototype.address = function(pk) {
   } else {
     pk = this.keyPair.publicKey;
   }
-  return bs58chk.encode(new ripemd160().update(Buffer.from(nacl.hash(pk))).digest(), ADDRESSPREFIX);
+  return bs58check.encode(Buffer.concat([Buffer.from(ADDRESSPREFIX, "hex"), new ripemd160().update(Buffer.from(nacl.hash(pk))).digest()]));
 }
 
 Bugout.prototype.ping = function() {
