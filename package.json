@@ -14,6 +14,7 @@
     "url": "https://github.com/chr15m/bugout/issues/"
   },
   "dependencies": {
+    "base-x": "^3.0.4",
     "bencode": "^2.0.0",
     "bs58": "^4.0.1",
     "bs58check": "^2.1.2",
