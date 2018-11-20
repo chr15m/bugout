@@ -73,7 +73,7 @@ alert(b.address());
 b.register("ping", function(address, args, callback) {
   // modify the passed arguments and reply
   args.hello = "Hello from " + b.address();
-  callback(message);
+  callback(args);
 });
 
 // save this server's session key seed to re-use
