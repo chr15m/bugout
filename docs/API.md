@@ -10,6 +10,8 @@ var Bugout = require("bugout");
 var b = new Bugout(identifier);
 ```
 
+Instead of a Bugout server address, `identifier` can be any string. All Bugout instances connecting to the same string `identifier` will join a p2p room where no particular peer is considered to be the server.
+
 ## Methods
 
 ```javascript
