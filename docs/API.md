@@ -10,35 +10,53 @@ var Bugout = require("bugout");
 var b = new Bugout(identifier);
 ```
 
-### b.address();
+## Methods
+
+```javascript
+b.address();
+```
 
 Get this Bugout instance's address. Other Bugout instances can connect to this instance by using it's address as the identifier during instantiation.
 
-### b.register(callname, function, docstring);
+```javascript
+b.register(callname, func, docstring);
+```
 
 Register an RPC call which remote Bugout instances can call on this instance using the `.rpc()` method below.
 
-### b.rpc(address, callname, arguments, callback);
+```javascript
+b.rpc(address, callname, args, callback);
+```
 
 Make an RPC call on a remote Bugout instance. If `address` is omitted then the identifier address (server) is assumed. `arguments` can be any JSON representable data structure.
 
-### b.send(address, message);
+```javascript
+b.send(address, message);
+```
 
 Send a generic JSON `message` to a particular bugout `address`. If only one argument is passed it is assumed to be the `message` and the `address` is assumed to be the channel identifier (server address).
 
-### b.heartbeat(interval);
+```javascript
+b.heartbeat(interval);
+```
 
-For applications which require an up-to-date list of connected peers, calling this functino causes a periodic heartbeat to be sent out meaning the list is kept up to date. The default value for `interval` is 30 seconds.
+For applications which require an up-to-date list of connected peers, calling this function causes a periodic heartbeat to be sent out meaning the list is kept up to date. The default value for `interval` is 30 seconds.
 
-### b.destroy(callback);
+```javascript
+b.destroy(callback);
+```
 
 Cleans up dangling references and timers and calls `callback` when done. `.close()` is an alias for this method.
 
-### b.on(eventname, callback);
+```javascript
+b.on(eventname, callback);
+```
 
 Listen out for an event called `eventname`. Arguments to the `callback` will depend on the type of event. See below for a list of events.
 
-### b.once(eventname, callback);
+```javascript
+b.once(eventname, callback);
+```
 
 As per `.on()` but stops listening after the event has fired once.
 
@@ -50,15 +68,15 @@ Fires whenever we make a connection with another Bugout instance. `address` is t
 
 ### server (address)
 
-Fires when a connection is made to a Bugout instance who's address specifically matches the `identifier` passed into the `Bugout(identifier)` instantiation. In other words when a connection is made to some Bugout server.
+Fires when a connection is made to a Bugout instance who's address specifically matches the `identifier` passed into the `Bugout(identifier)` instantiation. In other words, when a connection is made to some Bugout server.
 
 ### connections (count)
 
-Fires when the number of connections (wires) into the network changes.
+Fires when the number of connections (wires) into the network changes. Note that the number of connections may be different from the number of peers we see as some peers will be connected to indirectly through other peers.
 
 ### message (address, message, packet)
 
-Fires when a generic message is recieved by a remote Bugout instance.
+Fires when a generic message is recieved by a remote Bugout instance from a peer node.
 
 ### ping (address)
 
@@ -66,7 +84,7 @@ Fires when a remote Bugout instance send a ping message.
 
 ### left (address)
 
-Fires when a remote Bugout instance leaves the identifier room.
+Fires when a remote Bugout instance leaves the server identifier/room.
 
 ### timeout (address)
 
@@ -74,7 +92,7 @@ Fires when a remote Bugout instance times out (requires `.heartbeat()` to be run
 
 ### rpc (address, call, args, nonce)
 
-Fires when a remote RPC call is made against this Bugout instance.
+Fires every time a remote RPC call is made against this Bugout instance.
 
 ### rpc-response (address, nonce, response)
 
