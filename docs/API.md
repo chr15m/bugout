@@ -20,11 +20,11 @@ Register an RPC call which remote Bugout instances can call on this instance usi
 
 ### b.rpc(address, callname, arguments, callback);
 
-Make an RPC call on a remote Bugout instance. If address is omitted then the identifier address (server) is assumed. `arguments` can be any JSON representable data structure.
+Make an RPC call on a remote Bugout instance. If `address` is omitted then the identifier address (server) is assumed. `arguments` can be any JSON representable data structure.
 
 ### b.send(address, message);
 
-Send a generic JSON message to 
+Send a generic JSON `message` to a particular bugout `address`. If only one argument is passed it is assumed to be the `message` and the `address` is assumed to be the channel identifier (server address).
 
 ### b.heartbeat(interval);
 
