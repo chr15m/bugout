@@ -13,11 +13,13 @@ test.onFinish(function() {
 });
 
 test('Instantiation', function (t) {
-  t.plan(8);
+  t.plan(10);
 
   var b1 = new Bugout({seed: "BohNtZ24TrgMwZTLx9VDKtcZARNVuCt5tnecAAxYtTBC8pC61uGN", wt: wtest});
   t.equal(b1.identifier, "bYSkTy24xXJj6dWe79ZAQXKJZrn2n983SQ", "server identifier");
   t.equal(b1.pk, "CXENBY9X3x5TN1yjRyu1U1WkGuujuVBNiqxA16oAYbFo", "server public key");
+  t.equal(b1.identifier, Bugout.address("CXENBY9X3x5TN1yjRyu1U1WkGuujuVBNiqxA16oAYbFo"), "server address from pk");
+  t.equal(b1.identifier, Bugout.address(b1.keyPair.publicKey), "server address from pk array");
   b1.torrent.on("infoHash", function() {
     t.equal(b1.torrent.infoHash, "28d878040b7d2f5215409373b415fb99bc0e6d88", "server infoHash");
   });
