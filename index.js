@@ -99,6 +99,10 @@ Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
   return bs58check.encode(Buffer.concat([Buffer.from(SEEDPREFIX, "hex"), Buffer.from(material)]));
 }
 
+Bugout.encodeaddress = Bugout.prototype.encodeaddress = function(material) {
+  return bs58check.encode(Buffer.concat([Buffer.from(ADDRESSPREFIX, "hex"), new ripemd160().update(Buffer.from(nacl.hash(material))).digest()]));
+}
+
 // start a heartbeat and expire old "seen" peers who don't send us a heartbeat
 Bugout.prototype.heartbeat = function(interval) {
   var interval = interval || 30000;
@@ -139,13 +143,17 @@ Bugout.prototype.connections = function() {
 }
 
 Bugout.prototype.address = function(pk) {
-  if (pk) {
+  if (pk && typeof(pk) == "string") {
     pk = bs58.decode(pk);
+  } else if (pk && pk.length == 32) {
+    pk = pk;
   } else {
     pk = this.keyPair.publicKey;
   }
-  return bs58check.encode(Buffer.concat([Buffer.from(ADDRESSPREFIX, "hex"), new ripemd160().update(Buffer.from(nacl.hash(pk))).digest()]));
+  return this.encodeaddress(pk);
 }
+
+Bugout.address = Bugout.prototype.address;
 
 Bugout.prototype.ping = function() {
     // send a ping out so they know about us too
