@@ -166,6 +166,10 @@ Bugout servers can deployed and run inside of browser tabs on long running PCs b
 
 Check out [the nodejs demo](./docs/examples/node/) for an example of running a Bugout service under Node. Note that the `wrtc` library is not that stable at the time of writing and running Bugout in headless Chrome or Firefox seems to work better. Bugout servers running inside nodejs obviously won't have access to browser facilities like localStorage.
 
+## Stay updated
+
+Subscribe at [bugout.network](https://bugout.network/) for updates and new releases.
+
 ## The FAMGA virus
 
 > Infected with the [FAMGA](https://duckduckgo.com/?q=FAMGA) virus everybody's eating brains. Time to grab yr bugout box & hit the forest.
