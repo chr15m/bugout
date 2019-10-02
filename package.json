@@ -21,7 +21,7 @@
     "inherits": "^2.0.3",
     "ripemd160": "^2.0.2",
     "tweetnacl": "^1.0.0",
-    "webtorrent": "^0.102.0"
+    "webtorrent": "^0.107.6"
   },
   "devDependencies": {
     "babel-minify": "^0.5.0",
