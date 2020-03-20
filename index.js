@@ -11,8 +11,9 @@ const ripemd160 = require("ripemd160");
 
 const EXT = "bo_channel";
 const PEERTIMEOUT = 5 * 60 * 1000;
-const SEEDPREFIX = Buffer.from("490a", "hex")
-const ADDRESSPREFIX = Buffer.from("55", "hex")
+const SEEDPREFIX = Buffer.from("490a", "hex");
+const ADDRESSPREFIX = Buffer.from("55", "hex");
+const DEFAULT_ANNOUNCE = ["wss://hub.bugout.link", "wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
 
 /**
  * Multi-party data channels on WebTorrent extension.
@@ -31,14 +32,11 @@ function Bugout(identifier, opts) {
   }
   var opts = opts || {};
   if (!(this instanceof Bugout)) return new Bugout(identifier, opts);
-  
-  var trackeropts = opts.tracker || {};
-  trackeropts.getAnnounceOpts = trackeropts.getAnnounceOpts || function() { return {numwant: 4}; };
-  if (opts.iceServers) {
-    trackeropts.rtcConfig = {iceServers: opts.iceServers};
-  }
-  this.announce = opts.announce || ["wss://hub.bugout.link", "wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
-  this.wt = opts.wt || new WebTorrent({tracker: trackeropts});
+
+  this.wt = opts.wt || new WebTorrent({
+    tracker: _init_trackeropts(opts.tracker, opts.iceServers)
+  });
+  this.announce = opts.announce || DEFAULT_ANNOUNCE;
   this.nacl = nacl;
   
   if (opts["seed"]) {
@@ -95,6 +93,15 @@ function Bugout(identifier, opts) {
     this.heartbeat(opts.heartbeat);
   }
 }
+
+function _init_trackeropts(trackeropts, iceServers) {
+  trackeropts || (trackeropts = {});
+  trackeropts.getAnnounceOpts || (trackeropts.getAnnounceOpts = _default_getAnnounceOpts);
+  if (iceServers)
+    trackeropts.rtcConfig = {iceServers: opts.iceServers};
+  return trackeropts;
+}
+function _default_getAnnounceOpts () { return {numwant: 4}; };
 
 Bugout.prototype.WebTorrent = WebTorrent;
 
