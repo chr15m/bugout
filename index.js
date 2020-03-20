@@ -38,6 +38,7 @@ function Bugout(identifier, opts) {
   });
   this.announce = opts.announce || DEFAULT_ANNOUNCE;
 
+
   if (opts["seed"]) {
     this.seed = opts["seed"];
   } else {
@@ -51,7 +52,7 @@ function Bugout(identifier, opts) {
 
   this.pk = bs58.encode(Buffer.from(this.keyPair.publicKey));
   this.ek = bs58.encode(Buffer.from(this.keyPairEncrypt.publicKey));
-  
+
   this.identifier = identifier || this.address();
   this.peers = {}; // list of peers seen recently: address -> pk, ek, timestamp
   this.seen = {}; // messages we've seen recently: hash -> timestamp
@@ -67,24 +68,31 @@ function Bugout(identifier, opts) {
   debug("identifier", this.identifier);
   debug("public key", this.pk);
   debug("encryption key", this.ek);
-  
+
   if (typeof(File) == "object") {
     var blob = new File([this.identifier], this.identifier);
   } else {
     var blob = new Buffer.from(this.identifier);
     blob.name = this.identifier;
   }
-  var torrent = this.wt.seed(blob, {"name": this.identifier, "announce": this.announce}, partial(function(bugout, torrent) {
-    debug("torrent", bugout.identifier, torrent);
-    bugout.emit("torrent", bugout.identifier, torrent);
-    if (torrent.discovery.tracker) {
-      torrent.discovery.tracker.on("update", function(update) { bugout.emit("tracker", bugout.identifier, update); });
+
+  const self = this;
+
+  const torrent = this.wt.seed(
+    blob,
+    {"name": this.identifier, "announce": this.announce},
+    function(torrent) {
+      debug("torrent", self.identifier, torrent);
+      self.emit("torrent", self.identifier, torrent);
+      if (torrent.discovery.tracker) {
+        torrent.discovery.tracker.on("update", function(update) { self.emit("tracker", self.identifier, update); });
+      }
+      torrent.discovery.on("trackerAnnounce", function() {
+        self.emit("announce", self.identifier);
+        self.connections();
+      });
     }
-    torrent.discovery.on("trackerAnnounce", function() {
-      bugout.emit("announce", bugout.identifier);
-      bugout.connections();
-    });
-  }, this));
+  );
   torrent.on("wire", partial(attach, this, this.identifier));
   this.torrent = torrent;
 
@@ -104,7 +112,7 @@ function _default_getAnnounceOpts () { return {numwant: 4}; };
 
 Bugout.prototype.WebTorrent = WebTorrent;
 
-Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
+Bugout.encodeseed = Bugout.prototype.encodeseed = function (material) {
   return bs58check.encode(Buffer.concat([SEEDPREFIX, Buffer.from(material)]));
 }
 
@@ -115,7 +123,8 @@ Bugout.encodeaddress = Bugout.prototype.encodeaddress = function(material) {
 // start a heartbeat and expire old "seen" peers who don't send us a heartbeat
 Bugout.prototype.heartbeat = function(interval) {
   var interval = interval || 30000;
-  this.heartbeattimer = setInterval(partial(function (bugout) {
+  const bugout = this;
+  this.heartbeattimer = setInterval(function () {
     // broadcast a 'ping' message
     bugout.ping();
     var t = now();
@@ -130,7 +139,7 @@ Bugout.prototype.heartbeat = function(interval) {
         bugout.emit("left", address);
       }
     }
-  }, this), interval);
+  }, interval);
 }
 
 // clean up this bugout instance
@@ -205,8 +214,8 @@ Bugout.prototype.rpc = function(address, call, args, callback) {
     address = this.serveraddress;
   }
   if (this.peers[address]) {
-    var pk = this.peers[address].pk;
-    var callnonce = nacl.randomBytes(8);
+    const pk = this.peers[address].pk;
+    const callnonce = nacl.randomBytes(8);
     var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
     this.callbacks[toHex(callnonce)] = callback;
     packet = encryptPacket(this, pk, packet);
@@ -219,17 +228,14 @@ Bugout.prototype.rpc = function(address, call, args, callback) {
 // outgoing
 
 function makePacket(bugout, params) {
-  var p = {
+  const p = Object.assign({
     "t": now(),
     "i": bugout.identifier,
     "pk": bugout.pk,
     "ek": bugout.ek,
     "n": nacl.randomBytes(8),
-  };
-  for (var k in params) {
-    p[k] = params[k];
-  }
-  pe = bencode.encode(p);
+  }, params)
+  const pe = bencode.encode(p);
   return bencode.encode({
     "s": nacl.sign.detached(pe, bugout.keyPair.secretKey),
     "p": pe,
@@ -238,7 +244,7 @@ function makePacket(bugout, params) {
 
 function encryptPacket(bugout, pk, packet) {
   if (bugout.peers[bugout.address(pk)]) {
-    var nonce = nacl.randomBytes(nacl.box.nonceLength);
+    const nonce = nacl.randomBytes(nacl.box.nonceLength);
     packet = bencode.encode({
       "n": nonce,
       "ek": bs58.encode(Buffer.from(bugout.keyPairEncrypt.publicKey)),
@@ -251,14 +257,14 @@ function encryptPacket(bugout, pk, packet) {
 }
 
 function sendRaw(bugout, message) {
-  var wires = bugout.torrent.wires;
+  const wires = bugout.torrent.wires;
   for (var w=0; w<wires.length; w++) {
-    var extendedhandshake = wires[w]["peerExtendedHandshake"];
+    const extendedhandshake = wires[w]["peerExtendedHandshake"];
     if (extendedhandshake && extendedhandshake.m && extendedhandshake.m[EXT]) {
       wires[w].extended(EXT, message);
     }
   }
-  var hash = toHex(nacl.hash(message).slice(16));
+  const hash = toHex(nacl.hash(message).slice(16));
   debug("sent", hash, "to", wires.length, "wires");
 }
 
@@ -266,8 +272,8 @@ function sendRaw(bugout, message) {
 
 function onMessage(bugout, identifier, wire, message) {
   // hash to reference incoming message
-  var hash = toHex(nacl.hash(message).slice(16));
-  var t = now();
+  const hash = toHex(nacl.hash(message).slice(16));
+  const t = now();
   debug("raw message", identifier, message.length, hash);
   if (!bugout.seen[hash]) {
     var unpacked = bencode.decode(message);
@@ -376,7 +382,7 @@ function onMessage(bugout, identifier, wire, message) {
 // network functions
 
 function rpcCall(bugout, pk, call, args, nonce, callback) {
-  var packet = {"y": "rr", "rn": nonce};
+  const packet = {"y": "rr", "rn": nonce};
   if (bugout.api[call]) {
     bugout.api[call](bugout.address(pk), args, function(result) {
       packet["rr"] = JSON.stringify(result);
@@ -384,15 +390,17 @@ function rpcCall(bugout, pk, call, args, nonce, callback) {
   } else {
     packet["rr"] = JSON.stringify({"error": "No such API call."});
   }
-  packet = makePacket(bugout, packet);
-  packet = encryptPacket(bugout, pk, packet);
-  sendRaw(bugout, packet);
+  sendRaw(bugout,
+    encryptPacket(bugout, pk,
+      makePacket(bugout, packet)
+    )
+  );
 }
 
 function sawPeer(bugout, pk, ek, identifier) {
   debug("sawPeer", bugout.address(pk), ek);
-  var t = now();
-  var address = bugout.address(pk);
+  const t = now();
+  const address = bugout.address(pk);
   // ignore ourself
   if (address != bugout.address()) {
     // if we haven't seen this peer for a while
@@ -410,7 +418,7 @@ function sawPeer(bugout, pk, ek, identifier) {
         bugout.emit("server", bugout.address(pk));
       }
       // send a ping out so they know about us too
-      var packet = makePacket(bugout, {"y": "p"});
+      const packet = makePacket(bugout, {"y": "p"});
       sendRaw(bugout, packet);
     } else {
       bugout.peers[address].ek = ek;
@@ -469,13 +477,9 @@ function toHex(x) {
   }, '');
 }
 
-// javascript why
-function partial(fn) {
-  var slice = Array.prototype.slice;
-  var stored_args = slice.call(arguments, 1);
-  return function () {
-    var new_args = slice.call(arguments);
-    var args = stored_args.concat(new_args);
-    return fn.apply(null, args);
+// function.bind is more standard approach to currying, but v8-sensitive nit picking suggests closure
+function partial(fn, ...stored_args) {
+  return function (...args) {
+    return fn(...stored_args, ...args)
   };
 }
