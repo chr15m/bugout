@@ -1,26 +1,29 @@
 module.exports = Bugout;
 
-var debug = require("debug")("bugout");
-var WebTorrent = require("webtorrent");
-var bencode = require("bencode");
-var nacl = require("tweetnacl");
-var EventEmitter = require('events').EventEmitter;
-var inherits = require('inherits');
-var bs58 = require("bs58");
-var bs58check = require("bs58check");
-var ripemd160 = require("ripemd160");
+const debug = require("debug")("bugout");
+const WebTorrent = require("webtorrent");
+const bencode = require("bencode");
+const nacl = require("tweetnacl");
+const EventEmitter = require('events').EventEmitter;
+const bs58 = require("bs58");
+const bs58check = require("bs58check");
+const ripemd160 = require("ripemd160");
 
-inherits(Bugout, EventEmitter);
-
-var EXT = "bo_channel";
-var PEERTIMEOUT = 5 * 60 * 1000;
-var SEEDPREFIX = "490a";
-var ADDRESSPREFIX = "55";
+const EXT = "bo_channel";
+const PEERTIMEOUT = 5 * 60 * 1000;
+const SEEDPREFIX = Buffer.from("490a", "hex")
+const ADDRESSPREFIX = Buffer.from("55", "hex")
 
 /**
  * Multi-party data channels on WebTorrent extension.
  */
+
+Bugout.prototype = Object.create(EventEmitter.prototype);
+
 function Bugout(identifier, opts) {
+
+  EventEmitter.constructor.apply(this);
+
   // TODO: option to pass shared secret to encrypt swarm traffic
   if (identifier && typeof(identifier) == "object") {
     opts = identifier;
@@ -96,11 +99,11 @@ function Bugout(identifier, opts) {
 Bugout.prototype.WebTorrent = WebTorrent;
 
 Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
-  return bs58check.encode(Buffer.concat([Buffer.from(SEEDPREFIX, "hex"), Buffer.from(material)]));
+  return bs58check.encode(Buffer.concat([SEEDPREFIX, Buffer.from(material)]));
 }
 
 Bugout.encodeaddress = Bugout.prototype.encodeaddress = function(material) {
-  return bs58check.encode(Buffer.concat([Buffer.from(ADDRESSPREFIX, "hex"), new ripemd160().update(Buffer.from(nacl.hash(material))).digest()]));
+  return bs58check.encode(Buffer.concat([ADDRESSPREFIX, new ripemd160().update(Buffer.from(nacl.hash(material))).digest()]));
 }
 
 // start a heartbeat and expire old "seen" peers who don't send us a heartbeat
