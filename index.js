@@ -37,8 +37,7 @@ function Bugout(identifier, opts) {
     tracker: _init_trackeropts(opts.tracker, opts.iceServers)
   });
   this.announce = opts.announce || DEFAULT_ANNOUNCE;
-  this.nacl = nacl;
-  
+
   if (opts["seed"]) {
     this.seed = opts["seed"];
   } else {
