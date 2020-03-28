@@ -1,7 +1,8 @@
 <p align="center"><img src="docs/bugout-logo.svg"/></p>
 
-Web service bug-out bag. **[Live demo](https://chr15m.github.io/bugout)**. **[Messageboard demo](https://chr15m.github.io/bugout/examples/messageboard.html)**.
+Browser-to-browser networking built on [WebTorrent](https://webtorrent.io/). Web service bug-out bag. **[Messageboard demo](https://chr15m.github.io/bugout/examples/messageboard.html)**. **[Bugout demo](https://chr15m.github.io/bugout)**.
 
+ * Easily send messages directly between browsers.
  * Write servers that run in a browser tab.
  * Host backend services without a VPS, domain or SSL cert.
  * Easy to deploy & "self-hosted" servers by leaving a browser tab open.
@@ -142,11 +143,7 @@ The [quick-start boilerplate server in a single HTML file](https://github.com/ch
 
 ### Options
 
- * `wt` - a [WebTorrent instance](https://webtorrent.io/docs) to re-use. Pass this in if you're making connections to multiple Bugout channels.
- * `seed` - base58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
- * `keyPair` - pass [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures) directly rather than a seed.
- * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`
- * `announce` - use custom announce trackers to introduce peers e.g. `["wss://tracker...", ...]`. Only peers using the same trackers will find eachother.
+See the [API documentation](./docs/API.md) for options.
 
 ### Turn on debug logging
 

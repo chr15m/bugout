@@ -1,6 +1,6 @@
 # Bugout API documentation
 
-### Instantiation
+## `Bugout(identifier, [options])`
 
 Create a `Bugout` instance which will connect to other instances on the network using the same identifier. To connect to a server, use its address as the identifier.
 
@@ -10,7 +10,47 @@ var Bugout = require("bugout");
 var b = new Bugout(identifier);
 ```
 
-Instead of a Bugout server address, `identifier` can be any string. All Bugout instances connecting to the same string `identifier` will join a p2p room where no particular peer is considered to be the server.
+The `identifier` can be a Bugout server address, or any other string. If a non-address string is passed, all Bugout instances connecting to the same `identifier` will join a p2p room where no particular peer is considered to be the server.
+
+### `options`
+
+The following can be passed as the second `opts` argument to `Bugout(identifier, opts)` to customize various properties of the connection.
+
+ * `wt` - a [WebTorrent instance](https://webtorrent.io/docs) to re-use. Pass this in if you're making connections to multiple Bugout channels.
+ * `wtOpts` - options that will be passed when [creating the WebTorrent object](https://github.com/webtorrent/webtorrent/blob/master/docs/api.md#client--new-webtorrentopts).
+ * `torrentOpts` - options that will be passed to the [WebTorrent seed method](https://github.com/webtorrent/webtorrent/blob/master/docs/api.md#clientseedinput-opts-function-onseed-torrent-).
+ * `seed` - base58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
+ * `keyPair` - pass [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures) directly rather than a seed.
+ * `heartbeat` - start a network heartbeat to update peer list at an interval specified in milliseconds. See `b.heartbeat()` docs below.
+
+Shortcut options:
+
+ * `iceServers` - pass in custom STUN / TURN servers e.g.: `iceServers: [{urls: "stun:server.com:111"} ... ]`. Shortcut for passing `{rtcConfig: {iceServers: [...]}}` to `wtOpts`.
+ * `announce` - use custom announce trackers to introduce peers e.g. `["wss://tracker...", ...]`. Only peers using the same trackers will find eachother. Shortcut for passing `{announce: [...]}` to `torrentOpts`.
+
+### Using your own signaling servers
+
+By default Bugout uses the following set of WebTorrent wss trackers for signaling to introduce nodes to eachother:
+
+ * wss://hub.bugout.link
+ * wss://tracker.openwebtorrent.com
+ * wss://tracker.btorrent.xyz
+
+If you run your own tracker, or you just want to use a different tracker for signaling, you can pass it in via the `announce` option:
+
+```
+new Bugout(identifier, {"announce": [...my tracker wss URLs..]});
+```
+
+You can also pass it to the [WebTorrent `seed()`](https://github.com/webtorrent/webtorrent/blob/master/docs/api.md#clientseedinput-opts-function-onseed-torrent-) call via `torrentOpts`.
+
+### Customising the ICE STUN / TURN server set
+
+You can likewise pass `iceServers` in `opts` to customise the set of STUN / TURN servers used during the WebRTC negotiation, or you can pass the same values through `wtOpts`.
+
+### Private torrents
+
+One of the options you can pass to `torrentOpts` is `private: true` which will prevent the client from sharing the hash with the DHT and PEX.
 
 ## Methods
 
