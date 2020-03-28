@@ -28,16 +28,17 @@ function Bugout(identifier, opts) {
   }
   var opts = opts || {};
   if (!(this instanceof Bugout)) return new Bugout(identifier, opts);
-  
+
   var trackeropts = opts.tracker || {};
   trackeropts.getAnnounceOpts = trackeropts.getAnnounceOpts || function() { return {numwant: 4}; };
   if (opts.iceServers) {
     trackeropts.rtcConfig = {iceServers: opts.iceServers};
   }
+
   this.announce = opts.announce || ["wss://hub.bugout.link", "wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
-  this.wt = opts.wt || new WebTorrent({tracker: trackeropts});
+  this.wt = opts.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
   this.nacl = nacl;
-  
+
   if (opts["seed"]) {
     this.seed = opts["seed"];
   } else {
@@ -51,7 +52,7 @@ function Bugout(identifier, opts) {
 
   this.pk = bs58.encode(Buffer.from(this.keyPair.publicKey));
   this.ek = bs58.encode(Buffer.from(this.keyPairEncrypt.publicKey));
-  
+
   this.identifier = identifier || this.address();
   this.peers = {}; // list of peers seen recently: address -> pk, ek, timestamp
   this.seen = {}; // messages we've seen recently: hash -> timestamp
@@ -62,19 +63,19 @@ function Bugout(identifier, opts) {
   this.callbacks = {};
   this.serveraddress = null;
   this.heartbeattimer = null;
-  
+
   debug("address", this.address());
   debug("identifier", this.identifier);
   debug("public key", this.pk);
   debug("encryption key", this.ek);
-  
+
   if (typeof(File) == "object") {
     var blob = new File([this.identifier], this.identifier);
   } else {
     var blob = new Buffer.from(this.identifier);
     blob.name = this.identifier;
   }
-  var torrent = this.wt.seed(blob, {"name": this.identifier, "announce": this.announce}, partial(function(bugout, torrent) {
+  var torrent = this.wt.seed(blob, Object.assign({"name": this.identifier, "announce": this.announce}, opts["torrentOpts"] || {}), partial(function(bugout, torrent) {
     debug("torrent", bugout.identifier, torrent);
     bugout.emit("torrent", bugout.identifier, torrent);
     if (torrent.discovery.tracker) {
