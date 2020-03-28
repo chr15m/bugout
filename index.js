@@ -30,7 +30,7 @@ function Bugout(identifier, opts) {
   if (!(this instanceof Bugout)) return new Bugout(identifier, opts);
 
   var trackeropts = opts.tracker || {};
-  trackeropts.getAnnounceOpts = trackeropts.getAnnounceOpts || function() { return {numwant: 4}; };
+  //trackeropts.getAnnounceOpts = trackeropts.getAnnounceOpts || function() { return {numwant: 4}; };
   if (opts.iceServers) {
     trackeropts.rtcConfig = {iceServers: opts.iceServers};
   }
