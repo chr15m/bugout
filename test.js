@@ -6,6 +6,14 @@ var wtest = new WebTorrent({dht: false, tracker: false});
 var wtest2 = new WebTorrent({dht: false, tracker: false});
 var wtest3 = new WebTorrent({dht: false, tracker: false});
 
+// PRS WELCOME
+// 
+// TODO: test RPC with each type of argument combination
+// TODO: test bad RPC with unknown nonce
+// TODO: more bad parameters & calls
+// TODO: check mutated keys yield cryptographic errors
+// TODO: test malformed JSON packets
+
 test.onFinish(function() {
   wtest.destroy();
   wtest2.destroy();
@@ -314,10 +322,4 @@ test("heartbeat seen and timeout", function(t) {
     });
   });
 });
-
-// TODO: test RPC with each type of argument combination
-// TODO: test bad RPC with unknown nonce
-// TODO: more bad parameters & calls
-// TODO: check mutated keys yield cryptographic errors
-// TODO: test malformed JSON packets
 
