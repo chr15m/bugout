@@ -323,3 +323,26 @@ test("heartbeat seen and timeout", function(t) {
   });
 });
 
+test("RPC response handles async callback", function(t) {
+  t.plan(1);
+
+  var bs = new Bugout({wt: wtest});
+  var bc = new Bugout(bs.address(), {wt: wtest2});
+
+  bs.register("ping", function(address, args, cb) {
+    args["pong"] = true;
+    setTimeout(function() {
+      cb(args);
+    }, 1000);
+  });
+
+  bc.on("server", function(address) {
+    bc.rpc("ping", {}, function(response) {
+      t.ok(response.pong, "RPC server response check async pong");
+    });
+  });
+
+  bs.torrent.on("infoHash", function() {
+    bs.torrent.addPeer("127.0.0.1:" + bc.wt.address().port);
+  });
+});

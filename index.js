@@ -372,13 +372,16 @@ function rpcCall(bugout, pk, call, args, nonce, callback) {
   if (bugout.api[call]) {
     bugout.api[call](bugout.address(pk), args, function(result) {
       packet["rr"] = JSON.stringify(result);
+      packet = makePacket(bugout, packet);
+      packet = encryptPacket(bugout, pk, packet);
+      sendRaw(bugout, packet);
     });
   } else {
     packet["rr"] = JSON.stringify({"error": "No such API call."});
+    packet = makePacket(bugout, packet);
+    packet = encryptPacket(bugout, pk, packet);
+    sendRaw(bugout, packet);
   }
-  packet = makePacket(bugout, packet);
-  packet = encryptPacket(bugout, pk, packet);
-  sendRaw(bugout, packet);
 }
 
 function sawPeer(bugout, pk, ek, identifier) {
