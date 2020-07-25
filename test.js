@@ -323,7 +323,7 @@ test("heartbeat seen and timeout", function(t) {
   });
 });
 
-test("RPC response handles async callback", function(t) {
+test("RPC response handles async callback", {"timeout": 3000}, function(t) {
   t.plan(1);
 
   var bs = new Bugout({wt: wtest});

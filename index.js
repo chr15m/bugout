@@ -318,7 +318,11 @@ function onMessage(bugout, identifier, wire, message) {
         } else if (packet.y == "rr") { // rpc response
           var nonce = toHex(packet.rn);
           if (bugout.callbacks[nonce]) {
-            var responsestring = packet.rr.toString();
+            if (typeof(packet["rr"]) != "undefined") {
+              var responsestring = packet.rr.toString();
+            } else {
+              debug("Empty rr in rpc response.");
+            }
             try {
               var responsestringstruct = JSON.parse(responsestring);
             } catch(e) {
