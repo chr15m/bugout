@@ -199,10 +199,8 @@ Bugout.prototype.rpc = function(address, call, args, callback) {
   if (this.peers[address]) {
     var pk = this.peers[address].pk;
     var callnonce = nacl.randomBytes(8);
-    var packet = makePacket(this, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
     this.callbacks[toHex(callnonce)] = callback;
-    packet = encryptPacket(this, pk, packet);
-    sendRaw(this, packet);
+    makeEncryptSendPacket(this, pk, {"y": "r", "c": call, "a": JSON.stringify(args), "rn": callnonce});
   } else {
     throw address + " not seen - no public key.";
   }
@@ -252,6 +250,12 @@ function sendRaw(bugout, message) {
   }
   var hash = toHex(nacl.hash(message).slice(16));
   debug("sent", hash, "to", wires.length, "wires");
+}
+
+function makeEncryptSendPacket(bugout, pk, packet) {
+  packet = makePacket(bugout, packet);
+  packet = encryptPacket(bugout, pk, packet);
+  sendRaw(bugout, packet);
 }
 
 // incoming
@@ -376,15 +380,11 @@ function rpcCall(bugout, pk, call, args, nonce, callback) {
   if (bugout.api[call]) {
     bugout.api[call](bugout.address(pk), args, function(result) {
       packet["rr"] = JSON.stringify(result);
-      packet = makePacket(bugout, packet);
-      packet = encryptPacket(bugout, pk, packet);
-      sendRaw(bugout, packet);
+      makeEncryptSendPacket(bugout, pk, packet);
     });
   } else {
     packet["rr"] = JSON.stringify({"error": "No such API call."});
-    packet = makePacket(bugout, packet);
-    packet = encryptPacket(bugout, pk, packet);
-    sendRaw(bugout, packet);
+    makeEncryptSendPacket(bugout, pk, packet);
   }
 }
 
