@@ -21,7 +21,7 @@ test.onFinish(function() {
 });
 
 test('Instantiation', function (t) {
-  t.plan(10);
+  t.plan(12);
 
   var b1 = new Bugout({seed: "BohNtZ24TrgMwZTLx9VDKtcZARNVuCt5tnecAAxYtTBC8pC61uGN", wt: wtest});
   t.equal(b1.identifier, "bYSkTy24xXJj6dWe79ZAQXKJZrn2n983SQ", "server identifier");
@@ -49,6 +49,11 @@ test('Instantiation', function (t) {
     console.log(b4.torrent.infoHash);
     t.equal(b4.torrent.infoHash, "5486696a87e91c6c7fcfc6279c9b08709c7aa61f", "client infoHash");
   });
+
+  var b5 = new Bugout({torrent: b4.torrent});
+  t.equal(b5.torrentCreated, false);
+  b5.destroy();
+  t.equal(b4.torrent, b5.torrent);
 });
 
 test("Connectivity events", function(t) {
