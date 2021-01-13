@@ -80,10 +80,11 @@ function Bugout(identifier, opts) {
   if (opts.torrent) {
     this.torrent = opts.torrent;
     this.torrentCreated = false;
+    // 'ready' may have already fired.
     if (this.torrent.ready) {
       this._onTorrent();
     } else {
-      this.torrent.on('ready', this._onTorrent.bind(this));
+      this.torrent.on('ready', partial(this._onTorrent.bind(this)));
     }
   } else {
     this.wt = this.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
@@ -105,14 +106,14 @@ Bugout.prototype._onTorrent = function() {
   debug("torrent", this.identifier, this.torrent);
   this.emit("torrent", this.identifier, this.torrent);
   if (this.torrent.discovery.tracker) {
-    this.torrent.discovery.tracker.on("update", function(update) {
-      this.emit("tracker", this.identifier, update);
-    });
+    this.torrent.discovery.tracker.on("update", partial(function(bugout, update) {
+      bugout.emit("tracker", bugout.identifier, update);
+    }, this));
   }
-  this.torrent.discovery.on("trackerAnnounce", function() {
-    this.emit("announce", this.identifier);
-    this.connections();
-  });
+  this.torrent.discovery.on("trackerAnnounce", partial(function(bugout) {
+    bugout.emit("announce", bugout.identifier);
+    bugout.connections();
+  }, this));
 }
 
 Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
