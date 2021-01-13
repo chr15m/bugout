@@ -75,22 +75,20 @@ function Bugout(identifier, opts) {
     var blob = new Buffer.from(this.identifier);
     blob.name = this.identifier;
   }
+
   // Caller may already be seeding a torrent...
   if (opts.torrent) {
     this.torrent = opts.torrent;
     this.torrentCreated = false;
+    if (this.torrent.ready) {
+      this._onTorrent();
+    } else {
+      this.torrent.on('ready', this._onTorrent.bind(this));
+    }
   } else {
     this.wt = this.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
     this.torrent = this.wt.seed(blob, Object.assign({"name": this.identifier, "announce": this.announce}, opts["torrentOpts"] || {}), partial(function(bugout, torrent) {
-      debug("torrent", bugout.identifier, torrent);
-      bugout.emit("torrent", bugout.identifier, torrent);
-      if (torrent.discovery.tracker) {
-        torrent.discovery.tracker.on("update", function(update) { bugout.emit("tracker", bugout.identifier, update); });
-      }
-      torrent.discovery.on("trackerAnnounce", function() {
-        bugout.emit("announce", bugout.identifier);
-        bugout.connections();
-      });
+      bugout._onTorrent();
     }, this));
     this.torrentCreated = true;
   }
@@ -102,6 +100,20 @@ function Bugout(identifier, opts) {
 }
 
 Bugout.prototype.WebTorrent = WebTorrent;
+
+Bugout.prototype._onTorrent = function() {
+  debug("torrent", this.identifier, this.torrent);
+  this.emit("torrent", this.identifier, this.torrent);
+  if (this.torrent.discovery.tracker) {
+    this.torrent.discovery.tracker.on("update", function(update) {
+      this.emit("tracker", this.identifier, update);
+    });
+  }
+  this.torrent.discovery.on("trackerAnnounce", function() {
+    this.emit("announce", this.identifier);
+    this.connections();
+  });
+}
 
 Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
   return bs58check.encode(Buffer.concat([Buffer.from(SEEDPREFIX, "hex"), Buffer.from(material)]));
