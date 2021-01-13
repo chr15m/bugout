@@ -84,7 +84,7 @@ function Bugout(identifier, opts) {
     if (this.torrent.ready) {
       this._onTorrent();
     } else {
-      this.torrent.on('ready', partial(this._onTorrent.bind(this)));
+      this.torrent.on('ready', this._onTorrent.bind(this));
     }
   } else {
     this.wt = this.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
