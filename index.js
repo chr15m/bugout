@@ -86,6 +86,10 @@ function Bugout(identifier, opts) {
     } else {
       this.torrent.on('ready', this._onTorrent.bind(this));
     }
+    // Could be existing wires...
+    this.torrent.wires.forEach((wire) => {
+      attach(this, this.identifier, wire, wire.addr);
+    });
   } else {
     this.wt = this.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
     this.torrent = this.wt.seed(blob, Object.assign({"name": this.identifier, "announce": this.announce}, opts["torrentOpts"] || {}), partial(function(bugout, torrent) {
