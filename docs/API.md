@@ -18,6 +18,7 @@ The following can be passed as the second `opts` argument to `Bugout(identifier,
 
  * `wt` - a [WebTorrent instance](https://webtorrent.io/docs) to re-use. Pass this in if you're making connections to multiple Bugout channels.
  * `wtOpts` - options that will be passed when [creating the WebTorrent object](https://github.com/webtorrent/webtorrent/blob/master/docs/api.md#client--new-webtorrentopts).
+ * `torrent` - a torrent to extend with Bugout RPC / gossip extension. If provided a new torrent will not be created.
  * `torrentOpts` - options that will be passed to the [WebTorrent seed method](https://github.com/webtorrent/webtorrent/blob/master/docs/api.md#clientseedinput-opts-function-onseed-torrent-).
  * `seed` - base58 encoded seed used to generate an [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures).
  * `keyPair` - pass [nacl signing key pair](https://github.com/dchest/tweetnacl-js#signatures) directly rather than a seed.

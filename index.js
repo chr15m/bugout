@@ -36,7 +36,7 @@ function Bugout(identifier, opts) {
   }
 
   this.announce = opts.announce || ["wss://hub.bugout.link", "wss://tracker.openwebtorrent.com", "wss://tracker.btorrent.xyz"];
-  this.wt = opts.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
+  this.wt = opts.wt;
   this.nacl = nacl;
 
   if (opts["seed"]) {
@@ -75,19 +75,29 @@ function Bugout(identifier, opts) {
     var blob = new Buffer.from(this.identifier);
     blob.name = this.identifier;
   }
-  var torrent = this.wt.seed(blob, Object.assign({"name": this.identifier, "announce": this.announce}, opts["torrentOpts"] || {}), partial(function(bugout, torrent) {
-    debug("torrent", bugout.identifier, torrent);
-    bugout.emit("torrent", bugout.identifier, torrent);
-    if (torrent.discovery.tracker) {
-      torrent.discovery.tracker.on("update", function(update) { bugout.emit("tracker", bugout.identifier, update); });
+
+  // Caller may already be seeding a torrent...
+  if (opts.torrent) {
+    this.torrent = opts.torrent;
+    this.torrentCreated = false;
+    // 'ready' may have already fired.
+    if (this.torrent.ready) {
+      this._onTorrent();
+    } else {
+      this.torrent.on('ready', this._onTorrent.bind(this));
     }
-    torrent.discovery.on("trackerAnnounce", function() {
-      bugout.emit("announce", bugout.identifier);
-      bugout.connections();
+    // Could be existing wires...
+    this.torrent.wires.forEach((wire) => {
+      attach(this, this.identifier, wire, wire.addr);
     });
-  }, this));
-  torrent.on("wire", partial(attach, this, this.identifier));
-  this.torrent = torrent;
+  } else {
+    this.wt = this.wt || new WebTorrent(Object.assign({tracker: trackeropts}, opts["wtOpts"] || {}));
+    this.torrent = this.wt.seed(blob, Object.assign({"name": this.identifier, "announce": this.announce}, opts["torrentOpts"] || {}), partial(function(bugout, torrent) {
+      bugout._onTorrent();
+    }, this));
+    this.torrentCreated = true;
+  }
+  this.torrent.on("wire", partial(attach, this, this.identifier));
 
   if (opts.heartbeat) {
     this.heartbeat(opts.heartbeat);
@@ -95,6 +105,20 @@ function Bugout(identifier, opts) {
 }
 
 Bugout.prototype.WebTorrent = WebTorrent;
+
+Bugout.prototype._onTorrent = function() {
+  debug("torrent", this.identifier, this.torrent);
+  this.emit("torrent", this.identifier, this.torrent);
+  if (this.torrent.discovery.tracker) {
+    this.torrent.discovery.tracker.on("update", partial(function(bugout, update) {
+      bugout.emit("tracker", bugout.identifier, update);
+    }, this));
+  }
+  this.torrent.discovery.on("trackerAnnounce", partial(function(bugout) {
+    bugout.emit("announce", bugout.identifier);
+    bugout.connections();
+  }, this));
+}
 
 Bugout.encodeseed = Bugout.prototype.encodeseed = function(material) {
   return bs58check.encode(Buffer.concat([Buffer.from(SEEDPREFIX, "hex"), Buffer.from(material)]));
@@ -130,7 +154,10 @@ Bugout.prototype.destroy = function(cb) {
   clearInterval(this.heartbeattimer);
   var packet = makePacket(this, {"y": "x"});
   sendRaw(this, packet);
-  this.wt.remove(this.torrent, cb);
+  // If caller provided the torrent, no need to clean it up.
+  if (this.wt && this.torrentCreated) {
+    this.wt.remove(this.torrent, cb);
+  }
 }
 
 Bugout.prototype.close = Bugout.prototype.destroy;
