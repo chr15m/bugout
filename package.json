@@ -31,7 +31,7 @@
   },
   "scripts": {
     "build": "npm run compile && npm run minify",
-    "minify": "cat bugout.js | minify > bugout.min.js",
+    "minify": "cat bugout.js | minify --mangle=false > bugout.min.js",
     "compile": "browserify -s Bugout index.js > bugout.js",
     "disc": "browserify -s Bugout --full-paths index.js | discify > disc.html",
     "size": "npm run build && cat bugout.min.js | gzip | wc -c",
