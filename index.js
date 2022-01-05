@@ -456,6 +456,7 @@ function attach(bugout, identifier, wire, addr) {
 function detach(bugout, identifier, wire) {
   debug("wire left", wire.peerId, identifier);
   bugout.emit("wireleft", bugout.torrent.wires.length, wire);
+  bugout.emit("left", Object.keys(bugout.peers)[0]);
   bugout.connections();
 }
 
