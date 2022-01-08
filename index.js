@@ -140,7 +140,7 @@ Bugout.prototype.heartbeat = function(interval) {
       var pk = bugout.peers[p].pk;
       var address = bugout.address(pk);
       var last = bugout.peers[p].last;
-      if (last + bugout.timeout < t) {
+      if (last + interval < t) {
         delete bugout.peers[p];
         bugout.emit("timeout", address);
         bugout.emit("left", address);
@@ -456,7 +456,6 @@ function attach(bugout, identifier, wire, addr) {
 function detach(bugout, identifier, wire) {
   debug("wire left", wire.peerId, identifier);
   bugout.emit("wireleft", bugout.torrent.wires.length, wire);
-  bugout.emit("left", Object.keys(bugout.peers)[0]);
   bugout.connections();
 }
 
