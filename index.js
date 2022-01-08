@@ -140,7 +140,7 @@ Bugout.prototype.heartbeat = function(interval) {
       var pk = bugout.peers[p].pk;
       var address = bugout.address(pk);
       var last = bugout.peers[p].last;
-      if (last + interval < t) {
+      if (last + bugout.timeout < t) {
         delete bugout.peers[p];
         bugout.emit("timeout", address);
         bugout.emit("left", address);
