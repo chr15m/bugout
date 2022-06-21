@@ -246,7 +246,7 @@ function makePacket(bugout, params) {
   for (var k in params) {
     p[k] = params[k];
   }
-  pe = bencode.encode(p);
+  var pe = bencode.encode(p);
   return bencode.encode({
     "s": nacl.sign.detached(pe, bugout.keyPair.secretKey),
     "p": pe,
