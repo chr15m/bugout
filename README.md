@@ -159,6 +159,10 @@ Bugout servers can deployed and run inside of browser tabs on long running PCs b
 
 [Bugout launcher](https://github.com/chr15m/bugout-launcher) is a nodejs based helper script to launch and run your Bugout servers from the command line using a headless browser instance.
 
+## Tracker
+
+The bottleneck with Bugout would be the lack of responsive trackers. The publicly available WebTorrent trackers are not very responsive to protect themselves from spamming of socket connection requests. Demos may not always work as expected because they make use of these public trackers. For this reason, it would be essential to run your own tracker (locally or not) to test your software. One simple to run tracker is [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker) which is easy to deploy and very stable.
+
 ### Nodejs
 
 Check out [the nodejs demo](./docs/examples/node/) for an example of running a Bugout service under Node. Note that the `wrtc` library is not that stable at the time of writing and running Bugout in headless Chrome or Firefox seems to work better. Bugout servers running inside nodejs obviously won't have access to browser facilities like localStorage.
