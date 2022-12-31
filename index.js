@@ -335,9 +335,13 @@ function onMessage(bugout, identifier, wire, message) {
         } else if (packet.y == "r") { // rpc call
           debug("rpc", identifier, packet);
           var call = packet.c.toString();
-          var argsstring = packet.a.toString();
           try {
-            var args = JSON.parse(argsstring);
+            if (typeof packet.a !== 'undefined' && packet.a !== null) {
+              var argsstring = packet.a.toString();
+              var args = JSON.parse(argsstring);
+            } else {
+              var args = null
+            }
           } catch(e) {
             var args = null;
             debug("Malformed args JSON: " + argsstring);

@@ -143,6 +143,32 @@ test("RPC and message passing", function(t) {
   });
 });
 
+test("RPC Call without passing any message/data", function(t) {
+  t.plan(5);
+
+  const bs = new Bugout({dht: false, tracker: false});
+  const bc = new Bugout(bs.address(), {dht: false, tracker: false});
+
+  bs.register("call_without_args", function(pk,args){
+    console.dir(args)
+    t.assert(args === null , 'args should be null , when called without args from another peer')
+  });
+  bs.register("call_with_args", function(pk,args){
+    t.assert(typeof args === 'object' , 'type of args should be an object')
+    t.assert( args.hasOwnProperty('hello'), 'args has correct message data props')
+    t.assert( args.hello === 'world', 'args has correct message data')
+  });
+  bc.on("server", function(address) {
+    t.equal(address,bs.address(), "server check client was rpc sender");
+    bc.rpc(bs.address(), 'call_without_args')
+    bc.rpc(bs.address(), 'call_with_args', { hello: 'world'})
+  });
+  // connect the two clients together
+  bs.torrent.on("infoHash", function() {
+    bs.torrent.addPeer("127.0.0.1:" + bc.wt.address().port);
+  });
+});
+
 test("3 party incomplete graph gossip test", function(t) {
   t.plan(10);
   
