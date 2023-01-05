@@ -336,12 +336,8 @@ function onMessage(bugout, identifier, wire, message) {
           debug("rpc", identifier, packet);
           var call = packet.c.toString();
           try {
-            if (typeof packet.a !== 'undefined' && packet.a !== null) {
-              var argsstring = packet.a.toString();
-              var args = JSON.parse(argsstring);
-            } else {
-              var args = null
-            }
+            var argsstring = packet["a"] ? packet.a.toString() : "null";
+            var args = JSON.parse(argsstring);
           } catch(e) {
             var args = null;
             debug("Malformed args JSON: " + argsstring);

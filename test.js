@@ -150,8 +150,7 @@ test("RPC Call without passing any message/data", function(t) {
   const bc = new Bugout(bs.address(), {dht: false, tracker: false});
 
   bs.register("call_without_args", function(pk,args){
-    console.dir(args)
-    t.assert(args === null , 'args should be null , when called without args from another peer')
+    t.assert(args === null, 'args should be null, when called without args from another peer')
   });
   bs.register("call_with_args", function(pk,args){
     t.assert(typeof args === 'object' , 'type of args should be an object')
