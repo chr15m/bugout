@@ -335,8 +335,8 @@ function onMessage(bugout, identifier, wire, message) {
         } else if (packet.y == "r") { // rpc call
           debug("rpc", identifier, packet);
           var call = packet.c.toString();
+          var argsstring = packet["a"] ? packet.a.toString() : "null";
           try {
-            var argsstring = packet["a"] ? packet.a.toString() : "null";
             var args = JSON.parse(argsstring);
           } catch(e) {
             var args = null;
