@@ -3,6 +3,7 @@
   "version": "0.0.13",
   "description": "Backend web services over WebRTC.",
   "main": "index.js",
+  "types": "index.d.ts",
   "author": "Chris McCormick <chris@mccormick.cx>",
   "homepage": "https://github.com/chr15m/bugout",
   "repository": {
